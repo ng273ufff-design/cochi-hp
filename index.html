@@ -66,36 +66,53 @@
     html, body { overflow-x: hidden; max-width: 100%; }
 
     .hero { background-attachment: scroll !important; }
-
     @media (max-width: 680px) {
       header {
-        padding: 10px 12px;
-        gap: 6px;
+        padding: 8px 10px;
+        gap: 4px;
         flex-wrap: nowrap;
+        align-items: center;
+      }
+      .logo {
+        font-size: 0.78rem !important;
+        white-space: nowrap;
+        flex-shrink: 1;
+        min-width: 0;
+      }
+      .logo span {
+        font-size: 0.42rem !important;
+        letter-spacing: 0.06em !important;
+        white-space: nowrap;
       }
       header > div {
-        gap: 6px !important;
-      }
-      header a[style] {
-        font-size: 0.6rem !important;
-        padding: 5px 8px !important;
-        letter-spacing: 0.05em !important;
         gap: 4px !important;
+        flex-shrink: 0;
+        flex-wrap: nowrap !important;
+        align-items: center;
       }
-      header a[style] svg {
-        width: 11px !important;
-        height: 11px !important;
+      header > div > a {
+        font-size: 0.52rem !important;
+        padding: 4px 6px !important;
+        letter-spacing: 0.03em !important;
+        gap: 3px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0;
+      }
+      header > div > a svg {
+        width: 9px !important;
+        height: 9px !important;
+        flex-shrink: 0;
       }
       .header-reserve {
-        font-size: 0.6rem !important;
-        padding: 5px 10px !important;
+        font-size: 0.52rem !important;
+        padding: 4px 7px !important;
+        white-space: nowrap !important;
+        letter-spacing: 0.05em !important;
       }
-      .logo { font-size: 1rem; }
-      .logo span { font-size: 0.55rem; }
       .hero {
-        min-height: 100svh;
-        background-size: cover;
-        background-position: center center;
+        min-height: 100svh !important;
+        background-size: cover !important;
+        background-position: center top !important;
       }
       section { padding: 48px 16px; }
       [style*="grid-template-columns:1fr 2fr"],
