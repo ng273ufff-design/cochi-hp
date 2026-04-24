@@ -67,6 +67,54 @@
 
     .hero { background-attachment: scroll !important; }
 
+    @media (max-width: 680px) {
+      header {
+        padding: 10px 12px;
+        gap: 6px;
+        flex-wrap: nowrap;
+      }
+      header > div {
+        gap: 6px !important;
+      }
+      header a[style] {
+        font-size: 0.6rem !important;
+        padding: 5px 8px !important;
+        letter-spacing: 0.05em !important;
+        gap: 4px !important;
+      }
+      header a[style] svg {
+        width: 11px !important;
+        height: 11px !important;
+      }
+      .header-reserve {
+        font-size: 0.6rem !important;
+        padding: 5px 10px !important;
+      }
+      .logo { font-size: 1rem; }
+      .logo span { font-size: 0.55rem; }
+      .hero {
+        min-height: 100svh;
+        background-size: cover;
+        background-position: center center;
+      }
+      section { padding: 48px 16px; }
+      [style*="grid-template-columns:1fr 2fr"],
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 2fr"],
+      [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+      }
+      [style*="grid-template-columns:1fr 1fr"][style*="gap:12px"] {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      svg[viewBox="0 0 320 360"] {
+        max-width: 220px !important;
+        margin: 0 auto;
+      }
+      details summary { font-size: 0.85rem; }
+    }
+
     body {
       font-family: 'Noto Sans JP', sans-serif;
       font-weight: 300;
