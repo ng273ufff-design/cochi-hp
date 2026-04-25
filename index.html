@@ -109,17 +109,15 @@
         white-space: nowrap !important;
         letter-spacing: 0.05em !important;
       }
-      /* 画像を横100%・縦は自動・切り取りなし */
       .hero {
         min-height: unset !important;
         background-size: 100% auto !important;
         background-position: left top !important;
-        padding-bottom: 56.25% !important; /* 16:9比率 */
+        padding-top: 56px !important; /* ヘッダー分下げる */
+        padding-bottom: 56.25% !important;
       }
-      /* テキストをロゴより下に */
       .hero-bottom {
         bottom: 5% !important;
-        top: auto !important;
       }
       section { padding: 48px 16px; }
       [style*="grid-template-columns:1fr 2fr"],
