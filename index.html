@@ -184,10 +184,22 @@
       min-height: 100svh;
       position: relative;
       overflow: hidden;
-      background-image: url('images/IMG_7876.JPG');
-      background-size: cover;
-      background-position: center top;
-      background-repeat: no-repeat;
+    }
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    @media (max-width: 680px) {
+      .hero-img {
+        object-position: 65% top;
+        width: 100%;
+        height: 100%;
+      }
     }
 
     .hero::before {
@@ -680,6 +692,7 @@
 
 <!-- Hero -->
 <section class="hero">
+  <img src="images/IMG_7876.JPG" alt="cochi Hair&Spa" class="hero-img">
   <div class="hero-bottom">
     <h1>大人女性のための<br>美容室</h1>
     <a href="https://stekina.com/line-app/2005653996?move_to=stylists" target="_blank" rel="noopener" class="hero-cta">LINEで予約する</a>
