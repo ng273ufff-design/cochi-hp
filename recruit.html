@@ -130,8 +130,6 @@
     .interview-q { font-size: 0.75rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 500; }
     .interview-q::before { content: "Q. "; }
     .interview-a { font-size: 0.83rem; color: var(--dark-mid); line-height: 2; }
-    @media (max-width: 768px) { .interview-grid { grid-template-columns: 1fr; } }
-
     /* VOICE */
     .voice { background: var(--cream); }
     .voice-card { background:var(--white); border:1px solid rgba(184,150,106,0.2); border-radius:4px; padding:40px 48px; }
@@ -152,19 +150,70 @@
 
     /* RESPONSIVE */
     @media (max-width:768px) {
-      header { padding:12px 20px; }
+      /* Header */
+      header { padding:12px 16px; }
+      .header-logo { font-size:0.78rem; }
+      .header-cta { font-size:0.65rem; padding:7px 14px; }
+
+      /* Hero */
       .hero { grid-template-columns:1fr; min-height:auto; }
-      .hero-right { height:280px; }
-      .hero-left { padding:80px 28px 48px; }
-      .salon-photo { height:320px; }
-      .salon-photo-text { padding:28px; }
+      .hero-right { height:260px; order:-1; }
+      .hero-left { padding:40px 24px 48px; }
+      .hero h1 { font-size:1.5rem; }
+      .hero-sub { font-size:0.78rem; }
+      .hero-tags { gap:6px; }
+      .hero-tag { font-size:0.62rem; padding:4px 10px; }
+      .hero-btn { font-size:0.75rem; padding:12px 28px; }
+
+      /* Salon photo */
+      .salon-photo { height:280px; }
+      .salon-photo-text { padding:24px; }
+      .salon-photo-text h2 { font-size:1.2rem; }
+      .salon-photo-text p { font-size:0.78rem; }
+
+      /* Sections */
+      section { padding:56px 18px; }
+      .section-title { font-size:1.4rem; }
+
+      /* Appeal */
+      .appeal-grid { grid-template-columns:1fr 1fr; gap:14px; }
+      .appeal-card-img { height:140px; }
+      .appeal-card-body { padding:16px 14px; }
+      .appeal-num { font-size:1.2rem; }
+      .appeal-card h3 { font-size:0.85rem; }
+      .appeal-card p { font-size:0.72rem; }
+
+      /* Split / Shift */
       .split { grid-template-columns:1fr; }
-      .split-img { height:280px; }
-      .split-content { padding:48px 28px; }
-      .gallery { grid-template-columns:1fr 1fr; grid-template-rows:200px 200px 200px; }
+      .split-img { height:240px; }
+      .split-content { padding:40px 24px; }
+      .shift-mini-hours { font-size:1.4rem; min-width:44px; }
+
+      /* Gallery */
+      .gallery { grid-template-columns:1fr 1fr; grid-template-rows:160px 160px 160px; }
       .gallery-item.large { grid-column:span 2; }
-      section { padding:72px 20px; }
-      .voice-card { padding:28px 24px; }
+
+      /* Salary */
+      .salary-grid { grid-template-columns:1fr; }
+      .salary-sub-grid { grid-template-columns:1fr 1fr; }
+      .salary-amount { font-size:1.3rem; }
+
+      /* Benefits */
+      .benefits-grid { grid-template-columns:1fr; gap:10px; }
+
+      /* Interview */
+      .interview-grid { grid-template-columns:1fr; gap:20px; }
+      .interview-photo { height:300px; }
+      .interview-body { padding:24px 20px; }
+
+      /* Voice */
+      .voice-card { padding:24px 20px; }
+      .voice-text { font-size:0.85rem; }
+
+      /* CTA */
+      .cta-buttons { flex-direction:column; align-items:center; }
+      .cta-btn-primary, .cta-btn-secondary { width:100%; max-width:280px; justify-content:center; }
+      .cta-info { font-size:0.65rem; }
     }
   </style>
 </head>
