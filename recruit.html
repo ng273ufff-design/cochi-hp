@@ -117,6 +117,21 @@
     .benefit-text h4 { font-size:0.82rem; font-weight:500; color:var(--dark); margin-bottom:3px; }
     .benefit-text p { font-size:0.72rem; color:var(--dark-mid); line-height:1.7; }
 
+    /* INTERVIEW */
+    .interview { background: #f2ede6; }
+    .interview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .interview-card { background: var(--white); border-radius: 6px; overflow: hidden; border: 1px solid rgba(184,150,106,0.18); }
+    .interview-photo { width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block; }
+    .interview-body { padding: 32px 28px; }
+    .interview-role { font-size: 0.58rem; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+    .interview-name { font-size: 1.1rem; color: var(--dark); font-weight: 500; margin-bottom: 24px; }
+    .interview-qa { display: flex; flex-direction: column; gap: 20px; }
+    .interview-item {}
+    .interview-q { font-size: 0.75rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 500; }
+    .interview-q::before { content: "Q. "; }
+    .interview-a { font-size: 0.83rem; color: var(--dark-mid); line-height: 2; }
+    @media (max-width: 768px) { .interview-grid { grid-template-columns: 1fr; } }
+
     /* VOICE */
     .voice { background: var(--cream); }
     .voice-card { background:var(--white); border:1px solid rgba(184,150,106,0.2); border-radius:4px; padding:40px 48px; }
@@ -369,6 +384,60 @@
       <div class="benefit-item"><div class="benefit-icon">✂️</div><div class="benefit-text"><h4>講習会補助</h4><p>外部セミナー・講習会の参加費用を補助。最新技術を学べます。</p></div></div>
       <div class="benefit-item"><div class="benefit-icon">🏥</div><div class="benefit-text"><h4>社会保険完備</h4><p>健康保険・厚生年金・雇用保険・労災保険（正社員）</p></div></div>
       <div class="benefit-item"><div class="benefit-icon">🚉</div><div class="benefit-text"><h4>交通費支給</h4><p>通勤交通費は全額支給。安心して通勤できます。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERVIEW -->
+<section class="interview">
+  <div class="container">
+    <p class="section-label">Staff Interview</p>
+    <h2 class="section-title">スタッフの声</h2>
+    <div class="divider"></div>
+    <div class="interview-grid">
+
+      <!-- 軸原大樹 -->
+      <div class="interview-card">
+        <img class="interview-photo" src="images/recruit/staff_daiki.jpeg" alt="軸原大樹 Shop Manager">
+        <div class="interview-body">
+          <p class="interview-role">Shop Manager</p>
+          <p class="interview-name">軸原 大樹（34歳）</p>
+          <div class="interview-qa">
+            <div class="interview-item">
+              <p class="interview-q">cochiで働いてから、どんな変化がありましたか？</p>
+              <p class="interview-a">マンツーマンなので、最初から最後まで自分のペースで丁寧に施術できます。お客様から直接「ありがとう」の言葉をいただける機会も増えて、やりがいを改めて感じています。</p>
+            </div>
+            <div class="interview-item">
+              <p class="interview-q">働いてよかったと感じることは？</p>
+              <p class="interview-a">時間と気持ちにゆとりができました。週休2日で、仕事が終わればすぐ帰宅できるので、家族との時間を大切にしながら働けています。</p>
+            </div>
+            <div class="interview-item">
+              <p class="interview-q">売り上げはどのくらいですか？</p>
+              <p class="interview-a">正直、最初は不安でした。でも高単価なので、月150万ほどは無理なく作れています。最高で月200万を超えた月もありますよ。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 村上優香 -->
+      <div class="interview-card">
+        <img class="interview-photo" src="images/recruit/staff_yuka.jpeg" alt="村上優香 Stylist">
+        <div class="interview-body">
+          <p class="interview-role">Stylist</p>
+          <p class="interview-name">村上 優香</p>
+          <div class="interview-qa">
+            <div class="interview-item">
+              <p class="interview-q">cochiで働く魅力を教えてください</p>
+              <p class="interview-a">お客様に自信を持ってすすめられる商材が揃っているのが嬉しいです。オーガニック素材など、安心して長く続けられるものばかり。シャンプールームの空間も心地よく、お客様にも喜んでいただいています。</p>
+            </div>
+            <div class="interview-item">
+              <p class="interview-q">働いてよかったと感じることは？</p>
+              <p class="interview-a">育児をしながら無理なく働けています。時間や日数の融通が利くので、子育て中のママさん美容師にも本当におすすめできる環境です。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
