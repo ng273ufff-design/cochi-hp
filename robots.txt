@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ng273ufff-design.github.io/cochi-HP/sitemap.xml
