@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ng273ufff-design.github.io/cochi-HP/sitemap.xml
+Sitemap: https://ng273ufff-design.github.io/cochi-hp/sitemap.xml
