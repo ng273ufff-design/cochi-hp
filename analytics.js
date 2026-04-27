@@ -7,7 +7,7 @@
   // CONFIG
   // ================================================================
   // Google Apps Script の URL を設定してください（setup 後に入力）
-  const SHEETS_ENDPOINT = '';  // ← 後で設定
+  const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyEHajt85Ke0DBk9SED20zOBQ2QMG6_g2W8HhheyvWXBsF81fEMbHiCgu1wDJvfRXao/exec';
 
   // ================================================================
   // セクション定義
