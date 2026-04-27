@@ -46,6 +46,35 @@
     }
     .refresh-btn:hover { background: var(--taupe); color: var(--dark); }
     .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Page tabs */
+    .page-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      background: var(--white);
+      border-radius: 8px;
+      padding: 4px;
+      border: 1px solid var(--beige);
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--taupe);
+      border-radius: 6px;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .tab.active {
+      background: var(--dark);
+      color: var(--white);
+    }
+    .tab:not(.active):hover { background: var(--beige); color: var(--dark); }
+
     .status-bar {
       background: var(--beige);
       border: 1px solid var(--taupe);
@@ -115,7 +144,10 @@
     }
     .funnel-count { width: 80px; text-align: right; font-size: 0.8rem; color: var(--taupe); flex-shrink: 0; }
 
-    /* Empty / error state */
+    /* page-only card hidden when not in "all" tab */
+    .all-only { transition: opacity 0.2s; }
+    .all-only.hidden { display: none; }
+
     .empty {
       text-align: center;
       padding: 48px 0;
@@ -125,28 +157,11 @@
     }
     .empty strong { color: var(--brown); display: block; margin-bottom: 8px; font-size: 1rem; }
 
-    /* Config notice */
-    .config-notice {
-      background: #fff8e8;
-      border: 1px solid var(--gold);
-      border-radius: 8px;
-      padding: 20px 24px;
-      margin-bottom: 28px;
-    }
-    .config-notice h3 { font-size: 0.9rem; color: var(--brown); margin-bottom: 8px; }
-    .config-notice p { font-size: 0.82rem; color: var(--text); line-height: 1.7; }
-    .config-notice code {
-      background: var(--beige);
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-
     @media (max-width: 680px) {
       .kpi-row { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1fr; }
       .funnel-label { width: 120px; font-size: 0.75rem; }
+      .page-tabs { flex-direction: column; }
     }
   </style>
 </head>
@@ -162,17 +177,16 @@
 
 <div class="container">
 
+  <!-- Page filter tabs -->
+  <div class="page-tabs">
+    <button class="tab active" data-page="all"     onclick="switchTab(this)">全体</button>
+    <button class="tab"        data-page="index"   onclick="switchTab(this)">トップページ</button>
+    <button class="tab"        data-page="recruit" onclick="switchTab(this)">求人ページ</button>
+  </div>
+
   <div class="status-bar">
     <div class="status-dot loading" id="status-dot"></div>
     <span id="status-text">データを読み込んでいます...</span>
-  </div>
-
-  <div id="config-notice" class="config-notice" style="display:none;">
-    <h3>⚙️ セットアップが必要です</h3>
-    <p>
-      Google Apps Script のURLが設定されていません。<br>
-      <code>dashboard.html</code> の <code>ENDPOINT</code> 変数にURLを貼り付けてください。
-    </p>
   </div>
 
   <!-- KPI -->
@@ -218,15 +232,15 @@
     </div>
   </div>
 
-  <!-- ページ別 -->
+  <!-- ページ別 + CTA -->
   <div class="grid">
-    <div class="card">
+    <div class="card all-only" id="card-pages">
       <h2>ページ別 訪問者数</h2>
       <div class="chart-wrap">
         <canvas id="chart-pages"></canvas>
       </div>
     </div>
-    <div class="card">
+    <div class="card" id="card-cta">
       <h2>LINE・応募クリック数</h2>
       <div class="chart-wrap">
         <canvas id="chart-cta"></canvas>
@@ -237,77 +251,74 @@
 </div>
 
 <script>
-// ============================================================
-// CONFIG — Apps Script の URL を貼り付けてください
-// ============================================================
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyEHajt85Ke0DBk9SED20zOBQ2QMG6_g2W8HhheyvWXBsF81fEMbHiCgu1wDJvfRXao/exec';
 
-// ============================================================
-// Chart instances
-// ============================================================
+let allData   = null;
+let currentPage = 'all';
 let chartVisitors, chartExits, chartPages, chartCta;
 
 const COLORS = {
-  gold:   '#c9a84c',
-  brown:  '#8b6f47',
-  taupe:  '#c8b89a',
-  dark:   '#3d2b1a',
-  beige:  '#f0e8da',
-  green:  '#7cb87c',
-  red:    '#c87c7c',
+  gold: '#c9a84c', brown: '#8b6f47', taupe: '#c8b89a',
+  dark: '#3d2b1a', beige: '#f0e8da', green: '#7cb87c', red: '#c87c7c',
 };
 const FUNNEL_COLORS = ['#c9a84c', '#8b6f47', '#3d2b1a'];
 
 function setStatus(state, text) {
-  const dot  = document.getElementById('status-dot');
-  const span = document.getElementById('status-text');
-  dot.className  = 'status-dot ' + state;
-  span.textContent = text;
+  document.getElementById('status-dot').className = 'status-dot ' + state;
+  document.getElementById('status-text').textContent = text;
+}
+
+function switchTab(btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentPage = btn.dataset.page;
+
+  // ページ別ドーナツは「全体」のみ表示
+  const cardPages = document.getElementById('card-pages');
+  cardPages.classList.toggle('hidden', currentPage !== 'all');
+
+  // CTAカードを全幅にするかどうか
+  const cardCta = document.getElementById('card-cta');
+  cardCta.style.gridColumn = currentPage !== 'all' ? '1 / -1' : '';
+
+  if (allData) renderAll(allData[currentPage] || allData.all);
 }
 
 async function loadData() {
-  if (!ENDPOINT) {
-    document.getElementById('config-notice').style.display = 'block';
-    setStatus('error', 'ENDPOINT が未設定です — dashboard.html の ENDPOINT 変数を設定してください');
-    renderEmpty();
-    return;
-  }
-
   setStatus('loading', 'データを取得中...');
   try {
     const res  = await fetch(ENDPOINT + '?action=data');
-    const data = await res.json();
-    renderAll(data);
-    const now = new Date().toLocaleString('ja-JP');
-    document.getElementById('last-updated').textContent = '最終更新: ' + now;
+    allData    = await res.json();
+    renderAll(allData[currentPage] || allData.all);
+    document.getElementById('last-updated').textContent = '最終更新: ' + new Date().toLocaleString('ja-JP');
     setStatus('ok', 'データを表示しています');
   } catch (err) {
     setStatus('error', 'データ取得に失敗しました: ' + err.message);
-    renderEmpty();
   }
 }
 
 function renderAll(data) {
+  if (!data) return;
   renderKPI(data);
   renderVisitors(data.dailyData || []);
   renderExits(data.sectionExits || []);
   renderFunnel(data.insightFunnel || []);
-  renderPages(data.pageData || []);
+  if (currentPage === 'all') renderPages(data.pageData || []);
   renderCTA(data.ctaData || []);
 }
 
 function renderKPI(data) {
-  document.getElementById('kpi-total').textContent   = (data.totalVisitors || 0).toLocaleString();
-  document.getElementById('kpi-7days').textContent   = (data.last7days || 0).toLocaleString();
-  const f = data.insightFunnel || [];
-  const consideration = f.find(x => x.label === '検討アクション');
-  document.getElementById('kpi-consideration').textContent = consideration ? consideration.pct + '%' : '—';
+  document.getElementById('kpi-total').textContent = (data.totalVisitors || 0).toLocaleString();
+  document.getElementById('kpi-7days').textContent = (data.last7days || 0).toLocaleString();
+  const f = (data.insightFunnel || []).find(x => x.label === '検討アクション');
+  document.getElementById('kpi-consideration').textContent = f ? f.pct + '%' : '—';
 }
 
 function renderVisitors(daily) {
   const ctx = document.getElementById('chart-visitors').getContext('2d');
   if (chartVisitors) chartVisitors.destroy();
   if (!daily.length) { showEmpty('chart-visitors', '訪問データがまだありません'); return; }
+  resetCanvas('chart-visitors');
   chartVisitors = new Chart(ctx, {
     type: 'line',
     data: {
@@ -317,19 +328,16 @@ function renderVisitors(daily) {
         data: daily.map(d => d.count),
         borderColor: COLORS.gold,
         backgroundColor: 'rgba(201,168,76,0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3,
-        pointBackgroundColor: COLORS.gold,
-        pointRadius: 3,
+        borderWidth: 2, fill: true, tension: 0.3,
+        pointBackgroundColor: COLORS.gold, pointRadius: 3,
       }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: '#f0e8da' }, ticks: { font: { size: 11 }, color: '#c8b89a', maxTicksLimit: 10 } },
-        y: { grid: { color: '#f0e8da' }, ticks: { font: { size: 11 }, color: '#c8b89a', stepSize: 1 }, beginAtZero: true },
+        x: { grid: { color: '#f0e8da' }, ticks: { font:{size:11}, color:'#c8b89a', maxTicksLimit:10 } },
+        y: { grid: { color: '#f0e8da' }, ticks: { font:{size:11}, color:'#c8b89a', stepSize:1 }, beginAtZero: true },
       },
     },
   });
@@ -339,6 +347,7 @@ function renderExits(exits) {
   const ctx = document.getElementById('chart-exits').getContext('2d');
   if (chartExits) chartExits.destroy();
   if (!exits.length) { showEmpty('chart-exits', '離脱データがまだありません'); return; }
+  resetCanvas('chart-exits');
   const top = exits.slice(0, 12);
   chartExits = new Chart(ctx, {
     type: 'bar',
@@ -356,8 +365,8 @@ function renderExits(exits) {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: '#f0e8da' }, ticks: { font: { size: 11 }, color: '#c8b89a' }, beginAtZero: true },
-        y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#4a3728' } },
+        x: { grid: { color: '#f0e8da' }, ticks: { font:{size:11}, color:'#c8b89a' }, beginAtZero: true },
+        y: { grid: { display: false }, ticks: { font:{size:11}, color:'#4a3728' } },
       },
     },
   });
@@ -373,7 +382,7 @@ function renderFunnel(funnel) {
     <div class="funnel-row">
       <div class="funnel-label">${item.label}</div>
       <div class="funnel-bar-wrap">
-        <div class="funnel-bar" style="width:${item.pct}%;background:${FUNNEL_COLORS[i] || COLORS.taupe}">${item.pct}%</div>
+        <div class="funnel-bar" style="width:${item.pct || 0}%;background:${FUNNEL_COLORS[i] || COLORS.taupe}">${item.pct}%</div>
       </div>
       <div class="funnel-count">${item.count.toLocaleString()}件</div>
     </div>
@@ -384,21 +393,16 @@ function renderPages(pages) {
   const ctx = document.getElementById('chart-pages').getContext('2d');
   if (chartPages) chartPages.destroy();
   if (!pages.length) { showEmpty('chart-pages', 'ページデータがまだありません'); return; }
+  resetCanvas('chart-pages');
   chartPages = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels: pages.map(p => p.page === 'index' ? 'トップページ' : '求人ページ'),
-      datasets: [{
-        data: pages.map(p => p.count),
-        backgroundColor: [COLORS.gold, COLORS.brown],
-        borderWidth: 0,
-      }],
+      datasets: [{ data: pages.map(p => p.count), backgroundColor: [COLORS.gold, COLORS.brown], borderWidth: 0 }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { font: { size: 12 }, color: '#4a3728', padding: 16 } },
-      },
+      plugins: { legend: { position: 'bottom', labels: { font:{size:12}, color:'#4a3728', padding:16 } } },
     },
   });
 }
@@ -407,6 +411,7 @@ function renderCTA(cta) {
   const ctx = document.getElementById('chart-cta').getContext('2d');
   if (chartCta) chartCta.destroy();
   if (!cta.length) { showEmpty('chart-cta', 'CTAクリックデータがまだありません'); return; }
+  resetCanvas('chart-cta');
   const labels = { line: 'LINE予約', recruit: '応募・見学', instagram: 'Instagram' };
   chartCta = new Chart(ctx, {
     type: 'bar',
@@ -423,32 +428,33 @@ function renderCTA(cta) {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#4a3728' } },
-        y: { grid: { color: '#f0e8da' }, ticks: { font: { size: 11 }, color: '#c8b89a' }, beginAtZero: true },
+        x: { grid: { display: false }, ticks: { font:{size:12}, color:'#4a3728' } },
+        y: { grid: { color: '#f0e8da' }, ticks: { font:{size:11}, color:'#c8b89a' }, beginAtZero: true },
       },
     },
   });
+}
+
+function resetCanvas(id) {
+  const canvas = document.getElementById(id);
+  canvas.style.display = '';
+  const old = canvas.parentElement.querySelector('.empty');
+  if (old) old.remove();
 }
 
 function showEmpty(canvasId, msg) {
   const canvas = document.getElementById(canvasId);
   const wrap   = canvas.parentElement;
   canvas.style.display = 'none';
+  const existing = wrap.querySelector('.empty');
+  if (existing) existing.remove();
   const div = document.createElement('div');
   div.className = 'empty';
   div.innerHTML = '<strong>データなし</strong>' + msg;
   wrap.appendChild(div);
 }
 
-function renderEmpty() {
-  ['chart-visitors','chart-exits','chart-pages','chart-cta'].forEach(id => showEmpty(id, ''));
-  document.getElementById('funnel-container').innerHTML =
-    '<div class="empty"><strong>データなし</strong>ENDPOINT を設定してください</div>';
-}
-
-// 初回読み込み
 loadData();
-// 5分ごとに自動更新
 setInterval(loadData, 5 * 60 * 1000);
 </script>
 </body>
