@@ -204,7 +204,7 @@
     .interview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
     .interview-card { background: var(--white); border-radius: 6px; overflow: hidden; border: 1px solid rgba(184,150,106,0.18); }
     .interview-photo { width: 100%; height: 420px; object-fit: cover; object-position: center 10%; display: block; }
-    .interview-card:first-child .interview-photo { object-position: center 5%; transform: scale(1.9); transform-origin: center 10%; }
+    .interview-photo--daiki { background: url('images/recruit/staff_daiki2.jpeg') center 10% / 190% auto no-repeat; }
     .interview-body { padding: 32px 28px; }
     .interview-role { font-size: 0.58rem; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
     .interview-name { font-size: 1.1rem; color: var(--dark); font-weight: 500; margin-bottom: 24px; }
@@ -604,7 +604,7 @@
 
       <!-- 軸原大樹 -->
       <div class="interview-card">
-        <img class="interview-photo" src="images/recruit/staff_daiki2.jpeg" alt="軸原大樹 Shop Manager">
+        <div class="interview-photo interview-photo--daiki"></div>
         <div class="interview-body">
           <p class="interview-role">Shop Manager</p>
           <p class="interview-name">軸原 大樹（34歳）</p>
