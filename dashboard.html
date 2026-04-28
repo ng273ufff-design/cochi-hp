@@ -156,6 +156,14 @@
       line-height: 1.8;
     }
     .empty strong { color: var(--brown); display: block; margin-bottom: 8px; font-size: 1rem; }
+    .clarity-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #5158cf; color: #fff;
+      padding: 9px 20px; border-radius: 6px;
+      font-size: 0.82rem; text-decoration: none; letter-spacing: 0.05em;
+      transition: background 0.2s;
+    }
+    .clarity-btn:hover { background: #3d44b0; }
 
     @media (max-width: 680px) {
       .kpi-row { grid-template-columns: 1fr; }
@@ -172,7 +180,10 @@
     <h1>cochi Hair&amp;Spa — Analytics</h1>
     <div class="subtitle" id="last-updated">読み込み中...</div>
   </div>
-  <button class="refresh-btn" onclick="loadData()">更新</button>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a class="clarity-btn" href="https://clarity.microsoft.com/projects/view/wirzk7niey/heatmaps" target="_blank">🔥 ヒートマップを見る</a>
+    <button class="refresh-btn" onclick="loadData()">更新</button>
+  </div>
 </header>
 
 <div class="container">
