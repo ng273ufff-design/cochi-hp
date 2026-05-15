@@ -1,15 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://ng273ufff-design.github.io/cochi-hp/</loc>
-    <lastmod>2026-05-13</lastmod>
+    <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/IMG_7876.JPG</image:loc>
+      <image:title>cochi Hair&amp;Spa 中川駅徒歩2分の美容室</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://ng273ufff-design.github.io/cochi-hp/recruit.html</loc>
-    <lastmod>2026-05-13</lastmod>
+    <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/recruit/photo_hero.jpeg</image:loc>
+      <image:title>cochi Hair&amp;Spa 美容師求人</image:title>
+      <image:caption>中川・センター北・センター南・港北ニュータウン・都筑区の美容師求人</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8658.jpg</image:loc>
+      <image:title>cochi 店内 内装ディテール</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8666.jpg</image:loc>
+      <image:title>cochi 店内 バックヤード</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8657.jpg</image:loc>
+      <image:title>cochi 店内 プライベート空間</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8651.jpg</image:loc>
+      <image:title>cochi 店内 待合スペース</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8648.jpg</image:loc>
+      <image:title>cochi 店内 入口</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8659.jpg</image:loc>
+      <image:title>cochi 店内 取り扱い商品</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8661.jpg</image:loc>
+      <image:title>cochi 店内 ヘッドスパエリア</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ng273ufff-design.github.io/cochi-hp/images/salon/photo8664.jpg</image:loc>
+      <image:title>cochi 店内 パウダールーム</image:title>
+    </image:image>
   </url>
 </urlset>
