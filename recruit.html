@@ -623,7 +623,6 @@
       <button id="sg-prev" type="button" style="position:absolute;top:50%;left:12px;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);color:var(--dark);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" aria-label="前の写真">‹</button>
       <button id="sg-next" type="button" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);color:var(--dark);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" aria-label="次の写真">›</button>
       <div id="sg-counter" style="position:absolute;bottom:14px;right:18px;background:rgba(58,46,38,0.75);color:var(--cream);font-size:0.72rem;letter-spacing:0.12em;padding:5px 14px;border-radius:14px;font-family:Georgia,serif;">1/8</div>
-      <div id="sg-caption" style="position:absolute;bottom:14px;left:18px;background:rgba(58,46,38,0.75);color:var(--cream);font-size:0.72rem;letter-spacing:0.08em;padding:5px 14px;border-radius:14px;">内装ディテール</div>
     </div>
 
     <!-- Thumbs -->
@@ -656,7 +655,6 @@
   var idx = 0;
   var main = document.getElementById('sg-main');
   var counter = document.getElementById('sg-counter');
-  var caption = document.getElementById('sg-caption');
   var thumbs = document.getElementById('sg-thumbs');
 
   function show(i) {
@@ -668,7 +666,6 @@
       main.style.opacity = '1';
     }, 150);
     counter.textContent = (idx + 1) + '/' + photos.length;
-    caption.textContent = photos[idx].cap;
     [].forEach.call(thumbs.children, function(el, j) {
       el.classList.toggle('active', j === idx);
     });
