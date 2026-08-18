@@ -145,9 +145,13 @@
     return 'desktop';
   }
 
+  // GitHub Pages はサブディレクトリ配信（/cochi-hp/）なので、
+  // 公開場所に関係なく同じキーになるよう最終セグメントで正規化する。
   function normalizePath(path) {
-    if (!path || path === '/') return '/';
-    return path.replace(/index\.html$/, '').replace(/\/+$/, '') || '/';
+    const last = (path || '/').split('/').pop();
+    if (!last || last === 'index.html') return '/';
+    if (last.indexOf('recruit') === 0) return '/recruit.html';
+    return '/' + last;
   }
 
   // ================================================================
