@@ -38,7 +38,7 @@ const V2_MAXSEEN = 1500;  // 1日あたりの重複判定キー上限
 
 function v2NewBucket() {
   return { pv:0, eng:0, u:0, nu:0, s:0, seen:{}, cta:{}, hr:{}, ctahr:{},
-           pg:{}, src:{}, dev:{}, ex:{}, fn:{1:0,2:0,3:0}, sc:{}, trunc:0 };
+           pg:{}, lp:{}, ev:{}, src:{}, dev:{}, ex:{}, fn:{1:0,2:0,3:0}, sc:{}, trunc:0 };
 }
 
 function v2Page(b, path) {
@@ -57,6 +57,8 @@ function v2Record(data) {
     const props = PropertiesService.getScriptProperties();
     const key   = V2_PREFIX + date;
     const b     = JSON.parse(props.getProperty(key) || "null") || v2NewBucket();
+    if (!b.lp) b.lp = {};   // 既存バケットとの互換
+    if (!b.ev) b.ev = {};
 
     const sid  = data.sid || "";
     const uid  = data.uid || sid;
@@ -69,6 +71,9 @@ function v2Record(data) {
       b.seen[k] = 1; return true;
     };
 
+    // 全イベントの発生数（イベント一覧用）
+    if (ev) b.ev[ev] = (b.ev[ev] || 0) + 1;
+
     if (ev === "page_view") {
       b.pv++;
       b.hr[hour] = (b.hr[hour] || 0) + 1;
@@ -77,6 +82,7 @@ function v2Record(data) {
         b.s++;
         if (data.src)    b.src[data.src]    = (b.src[data.src] || 0) + 1;
         if (data.device) b.dev[data.device] = (b.dev[data.device] || 0) + 1;
+        b.lp[path] = (b.lp[path] || 0) + 1;   // 入口ページ（そのセッションで最初に見たページ）
       }
       const p = v2Page(b, path);
       p.pv++;
@@ -127,8 +133,8 @@ function v2Api() {
   const daily = dates.map(function (d) {
     const b = JSON.parse(all[V2_PREFIX + d]);
     return { d:d, u:b.u, nu:b.nu, s:b.s, pv:b.pv, eng:Math.round(b.eng),
-             cta:b.cta, hr:b.hr, ctahr:b.ctahr, pg:b.pg, src:b.src, dev:b.dev,
-             ex:b.ex, fn:b.fn, sc:b.sc };
+             cta:b.cta, hr:b.hr, ctahr:b.ctahr, pg:b.pg, lp:b.lp || {}, ev:b.ev || {},
+             src:b.src, dev:b.dev, ex:b.ex, fn:b.fn, sc:b.sc };
   });
 
   return {

@@ -168,78 +168,104 @@
   <div class="kpis" id="kpis"></div>
 
   <!-- ============ TRAFFIC ============ -->
-  <div class="sec-title">Traffic ／ アクセス</div>
+  <div class="sec-title">① どれくらい見られているか</div>
   <div class="grid2">
     <div class="card full">
-      <h2>アクセス推移</h2>
+      <h2>見に来た人の推移</h2>
       <div class="h-note" id="note-traffic"></div>
       <div class="chart-box tall"><canvas id="c-traffic"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>積み上がり（合計何人来たか）</h2>
+      <div class="h-note">期間のはじめから足していったグラフ。線が急なほど勢いがあります</div>
+      <div class="chart-box"><canvas id="c-cum"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>はじめての人 と くり返し来た人</h2>
+      <div class="h-note">はじめて＝この端末で初訪問／くり返し＝2回目以降</div>
+      <div class="chart-box"><canvas id="c-newret"></canvas></div>
     </div>
   </div>
 
   <!-- ============ CONVERSION ============ -->
-  <div class="sec-title">Conversion ／ LINE予約</div>
+  <div class="sec-title">② 予約につながったか</div>
   <div class="grid2">
     <div class="card full">
-      <h2>LINE予約クリック推移</h2>
-      <div class="h-note">棒＝クリック数／折れ線＝クリック率（クリック数 ÷ セッション数）</div>
+      <h2>LINE予約ボタンが押された数</h2>
+      <div class="h-note">棒＝押された回数／折れ線＝100回の訪問のうち何回押されたか（％）</div>
       <div class="chart-box tall"><canvas id="c-line"></canvas></div>
     </div>
     <div class="card">
-      <h2>時間帯別</h2>
-      <div class="h-note">何時に予約行動が起きているか</div>
+      <h2>何時に押されているか</h2>
+      <div class="h-note">投稿や広告を出す時間を決める材料になります</div>
       <div class="chart-box"><canvas id="c-hour"></canvas></div>
     </div>
     <div class="card">
-      <h2>曜日別</h2>
-      <div class="h-note">月〜日の比較</div>
+      <h2>何曜日に押されているか</h2>
+      <div class="h-note">月〜日の比べ方。棒が訪問と押された数、線が押された割合</div>
       <div class="chart-box"><canvas id="c-dow"></canvas></div>
     </div>
     <div class="card full">
-      <h2>ページ別 LINEクリック率</h2>
-      <div class="h-note">アクセス → クリック → 率。率が高くアクセスが少ないページは、導線を増やす価値があります</div>
+      <h2>ページごとの予約されやすさ</h2>
+      <div class="h-note">見た人の数 → 押された数 → 押された割合。割合が高いのに見た人が少ないページは、TOPからの案内を増やす価値があります</div>
       <div id="t-pages"></div>
+    </div>
+    <div class="card full">
+      <h2>サイトで起きた行動の一覧</h2>
+      <div class="h-note">ページを見た・LINEを押した・電話を押した など、記録できたすべての動きです</div>
+      <div id="t-events"></div>
     </div>
   </div>
 
   <!-- ============ BEHAVIOR ============ -->
-  <div class="sec-title">Behavior ／ ページ内行動</div>
+  <div class="sec-title">③ ページの中でどう動いたか</div>
   <div class="grid2">
-    <div class="card">
-      <h2>離脱セクション</h2>
-      <div class="h-note">最後に見ていた場所（多い順）</div>
-      <div class="chart-box"><canvas id="c-exit"></canvas></div>
+    <div class="card full">
+      <h2>どこで見るのをやめたか（全セクション）</h2>
+      <div class="h-note">最後に見ていた場所です。ここが多い＝そこで興味が切れています</div>
+      <div class="chart-box" id="box-exit"><canvas id="c-exit"></canvas></div>
+      <div id="t-exit"></div>
     </div>
     <div class="card">
-      <h2>行動ファネル</h2>
-      <div class="h-note">認知 → 興味・関心 → 検討</div>
+      <h2>どこまで読まれたか</h2>
+      <div class="h-note">ページの上から何％まで進んだか。下にいくほど人数が減ります</div>
+      <div class="chart-box"><canvas id="c-scroll"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>気持ちの進み方</h2>
+      <div class="h-note">見つけた → 興味を持った → 予約を考えた、の3段階で何人残ったか</div>
       <div class="chart-box"><canvas id="c-funnel"></canvas></div>
     </div>
   </div>
 
   <!-- ============ ACQUISITION ============ -->
-  <div class="sec-title">Acquisition ／ 流入</div>
+  <div class="sec-title">④ どこから来たか</div>
   <div class="grid2">
     <div class="card">
-      <h2>流入元</h2>
-      <div class="h-note">セッション数の内訳</div>
+      <h2>来たきっかけ</h2>
+      <div class="h-note">検索＝Googleなどで探して／SNS＝Instagram等から／直接＝URLやブックマーク</div>
       <div class="chart-box"><canvas id="c-src"></canvas></div>
     </div>
     <div class="card">
-      <h2>デバイス</h2>
-      <div class="h-note">セッション数の内訳</div>
+      <h2>使っている機械</h2>
+      <div class="h-note">スマホ・PC・タブレットの内訳</div>
       <div class="chart-box"><canvas id="c-dev"></canvas></div>
     </div>
     <div class="card full">
-      <h2>流入元・デバイス別 コンバージョン</h2>
-      <div class="h-note">どこから来た人が予約しているか</div>
+      <h2>最初に開いたページ</h2>
+      <div class="h-note">サイトに入ってきた入口です。ここの印象で帰るか読むかが決まります</div>
+      <div id="t-landing"></div>
+    </div>
+    <div class="card full">
+      <h2>きっかけ・機械ごとの人数</h2>
+      <div class="h-note">どこから来た人が多いかの一覧</div>
       <div id="t-segments"></div>
     </div>
   </div>
 
   <!-- ============ ANALYSIS ============ -->
   <div class="analysis" id="analysis">
-    <h2>AI Analysis ／ 総評</h2>
+    <h2>まとめ ／ 次にやること</h2>
     <div class="a-sub" id="a-period"></div>
     <div id="a-body"><div class="empty">データ待機中</div></div>
   </div>
@@ -256,6 +282,17 @@ const SRC_LABEL = {organic:'検索',social:'SNS',direct:'直接',referral:'他�
 const DEV_LABEL = {mobile:'スマホ',tablet:'タブレット',desktop:'PC'};
 const CTA_LABEL = {line:'LINE予約',phone:'電話',mail:'メール',recruit:'応募',instagram:'Instagram',map:'地図',contact_form:'問い合わせ送信',recruit_form:'応募フォーム送信'};
 const DOW_LABEL = ['日','月','火','水','木','金','土'];
+// 記録されるイベント名を、そのまま日本語に言いかえたもの
+const EVENT_LABEL = {
+  page_view:                'ページを見た',
+  cta_click:                'ボタンを押した',
+  form_submit:              'フォームを送った',
+  section_view:             '各セクションを見た',
+  section_exit:             '見るのをやめた（離脱）',
+  scroll_depth:             '下までスクロールした',
+  insight_category_reached: '気持ちが進んだ',
+  engagement_ping:          '見続けている（60秒ごと）',
+};
 const PALETTE   = ['#8b6f47','#c9a84c','#c8b89a','#a68a64','#d9c9a8','#6f5636','#e0d0b0'];
 
 const state = {gran:'day', preset:'28d', from:null, to:null, cmp:'prev', demo:false};
@@ -320,7 +357,7 @@ function slice(from,to){
 function agg(buckets){
   const m={users:0,newUsers:0,sessions:0,pv:0,eng:0,cta:{},hr:new Array(24).fill(0),
            ctahr:new Array(24).fill(0),dowS:new Array(7).fill(0),dowL:new Array(7).fill(0),
-           pages:{},src:{},dev:{},ex:{},fn:{1:0,2:0,3:0},sc:{},days:buckets.length};
+           pages:{},landing:{},events:{},src:{},dev:{},ex:{},fn:{1:0,2:0,3:0},sc:{},days:buckets.length};
   buckets.forEach(b=>{
     m.users+=b.u; m.newUsers+=b.nu; m.sessions+=b.s; m.pv+=b.pv; m.eng+=b.eng;
     const dw=dowOf(b.d);
@@ -333,6 +370,8 @@ function agg(buckets){
       const s=m.pages[p]||(m.pages[p]={pv:0,s:0,line:0,cta:0,eng:0});
       const x=b.pg[p]; s.pv+=x.pv; s.s+=x.s; s.line+=x.line; s.cta+=x.cta; s.eng+=x.eng;
     });
+    Object.keys(b.lp ||{}).forEach(k=>m.landing[k]=(m.landing[k]||0)+b.lp[k]);
+    Object.keys(b.ev ||{}).forEach(k=>m.events[k]=(m.events[k]||0)+b.ev[k]);
     Object.keys(b.src||{}).forEach(k=>m.src[k]=(m.src[k]||0)+b.src[k]);
     Object.keys(b.dev||{}).forEach(k=>m.dev[k]=(m.dev[k]||0)+b.dev[k]);
     Object.keys(b.ex ||{}).forEach(k=>m.ex[k] =(m.ex[k] ||0)+b.ex[k]);
@@ -347,6 +386,8 @@ function agg(buckets){
   m.reach50  = m.pv ? (m.sc[50]||0)/m.pv : 0;
   m.bounce   = m.pv ? 1-((m.sc[25]||0)/m.pv) : 0;   // 25%未満で離脱した割合（近似）
   m.repeatRate = m.users ? 1-(m.newUsers/m.users) : 0;
+  m.newRate    = m.users ? m.newUsers/m.users : 0;
+  m.pvPerVisit = m.sessions ? m.pv/m.sessions : 0;
   return m;
 }
 
@@ -407,28 +448,37 @@ function renderAll(){
 
   renderKPI(cur,prev);
   renderTraffic(r,c);
+  renderCum(r);
+  renderNewRet(cur);
   renderLine(r,c);
   renderHour(cur);
   renderDow(cur);
   renderPages(cur);
+  renderEvents(cur);
   renderExit(cur);
+  renderScroll(cur);
   renderFunnel(cur);
   renderSrc(cur);
   renderDev(cur);
+  renderLanding(cur);
   renderSegments(cur);
   renderAnalysis(cur,prev,r,prev?c:null);
 }
 
 function renderKPI(cur,prev){
   const items=[
-    {l:'ユーザー数',    v:nf(cur.users),        d:delta(cur.users,prev&&prev.users),        sub:'新規 '+nf(cur.newUsers)+'／リピート '+nf(Math.max(0,cur.users-cur.newUsers))},
-    {l:'セッション',    v:nf(cur.sessions),     d:delta(cur.sessions,prev&&prev.sessions),  sub:'PV '+nf(cur.pv)},
-    {l:'LINE予約クリック',v:nf(cur.line),        d:delta(cur.line,prev&&prev.line),          sub:'全CTA '+nf(cur.ctaTotal)+'件', cls:'line-kpi'},
-    {l:'LINE予約クリック率',v:pct(cur.lineCVR,2),d:deltaPt(cur.lineCVR,prev&&prev.lineCVR),  sub:'クリック ÷ セッション', cls:'line-kpi'},
-    {l:'平均滞在時間',  v:secFmt(cur.engAvg),   d:delta(cur.engAvg,prev&&prev.engAvg),      sub:'画面を見ていた時間の平均'},
-    {l:'即離脱率',      v:pct(cur.bounce),      d:deltaPt(cur.bounce,prev&&prev.bounce),    sub:'25%スクロール未満で離脱（近似）'},
-    {l:'検討到達率',    v:pct(cur.sessions?cur.fn[3]/cur.sessions:0), d:null,               sub:'料金・FAQ・予約CTAまで到達'},
-    {l:'電話・その他CTA',v:nf(cur.ctaTotal-cur.line), d:delta(cur.ctaTotal-cur.line,prev&&(prev.ctaTotal-prev.line)), sub:Object.keys(cur.cta).filter(k=>k!=='line').map(k=>(CTA_LABEL[k]||k)+' '+cur.cta[k]).join('／')||'—'},
+    {l:'見に来た人',      v:nf(cur.users),        d:delta(cur.users,prev&&prev.users),        sub:'はじめて '+nf(cur.newUsers)+'人／くり返し '+nf(Math.max(0,cur.users-cur.newUsers))+'人'},
+    {l:'訪問回数',        v:nf(cur.sessions),     d:delta(cur.sessions,prev&&prev.sessions),  sub:'同じ人が日をあけて来たら2回と数えます'},
+    {l:'見られたページ数',v:nf(cur.pv),           d:delta(cur.pv,prev&&prev.pv),              sub:'ページが開かれた合計回数'},
+    {l:'1回で見たページ数',v:cur.pvPerVisit.toFixed(2)+'枚', d:delta(cur.pvPerVisit,prev&&prev.pvPerVisit), sub:'多いほど中まで読まれています'},
+    {l:'LINE予約を押した',v:nf(cur.line),         d:delta(cur.line,prev&&prev.line),          sub:'ボタン全体では '+nf(cur.ctaTotal)+'回', cls:'line-kpi'},
+    {l:'予約が押された割合',v:pct(cur.lineCVR,2),d:deltaPt(cur.lineCVR,prev&&prev.lineCVR), sub:'100回の訪問のうち何回押されたか', cls:'line-kpi'},
+    {l:'1回あたり見ていた時間',v:secFmt(cur.engAvg), d:delta(cur.engAvg,prev&&prev.engAvg),   sub:'画面を開いて実際に見ていた時間'},
+    {l:'すぐ帰った割合',  v:pct(cur.bounce),      d:deltaPt(cur.bounce,prev&&prev.bounce),    sub:'上から1/4も進まずに離れた割合'},
+    {l:'予約を考えた割合',v:pct(cur.sessions?cur.fn[3]/cur.sessions:0), d:null,               sub:'料金・よくある質問・予約ボタンまで見た割合'},
+    {l:'はじめての人の割合',v:pct(cur.newRate),   d:deltaPt(cur.newRate,prev&&prev.newRate),  sub:'低いほど常連さんに見られています'},
+    {l:'電話など他の行動',v:nf(cur.ctaTotal-cur.line), d:delta(cur.ctaTotal-cur.line,prev&&(prev.ctaTotal-prev.line)), sub:Object.keys(cur.cta).filter(k=>k!=='line').map(k=>(CTA_LABEL[k]||k)+' '+cur.cta[k]).join('／')||'まだありません'},
+    {l:'記録できた動きの数',v:nf(Object.values(cur.events).reduce((a,b)=>a+b,0)), d:null,     sub:'クリックやスクロールを含む全記録数'},
   ];
   document.getElementById('kpis').innerHTML = items.map(i=>`
     <div class="kpi ${i.cls||''}">
@@ -529,14 +579,14 @@ function renderPages(m){
   const maxCvr=Math.max(...rows.map(r=>r.cvr),0.0001);
   const avg=m.lineCVR;
   el.innerHTML=`<table><thead><tr>
-      <th>ページ</th><th class="num">セッション</th><th class="num">PV</th>
-      <th class="num">LINEクリック</th><th>クリック率</th><th class="num">平均滞在</th><th>評価</th>
+      <th>ページ</th><th class="num">見た人（回）</th><th class="num">開かれた回数</th>
+      <th class="num">予約を押した</th><th>押された割合</th><th class="num">見ていた時間</th><th>ひとこと</th>
     </tr></thead><tbody>${rows.map(r=>{
       const w=Math.round(r.cvr/maxCvr*70);
       let tag='—';
-      if(r.s>=20&&r.cvr>=avg*1.3) tag='<span class="tag" style="background:#e3f2e3;color:#3d7a3d">高効率</span>';
-      else if(r.s>=20&&r.cvr<avg*0.7) tag='<span class="tag" style="background:#f7e6e6;color:#a55">要改善</span>';
-      else if(r.s<20) tag='<span class="tag">サンプル不足</span>';
+      if(r.s>=20&&r.cvr>=avg*1.3) tag='<span class="tag" style="background:#e3f2e3;color:#3d7a3d">よく予約される</span>';
+      else if(r.s>=20&&r.cvr<avg*0.7) tag='<span class="tag" style="background:#f7e6e6;color:#a55">直したい</span>';
+      else if(r.s<20) tag='<span class="tag">まだ判断できない</span>';
       return `<tr>
         <td>${pageName(r.p)}<div class="muted" style="font-size:.68rem">${r.p}</div></td>
         <td class="num">${nf(r.s)}</td><td class="num">${nf(r.pv)}</td>
@@ -546,19 +596,79 @@ function renderPages(m){
     }).join('')}</tbody></table>`;
 }
 
+/* 累計（積み上がり）の折れ線 */
+function renderCum(r){
+  const g = state.gran==='custom' ? (diffDays(r.from,r.to)>120?'month':'day') : state.gran;
+  const s = series(slice(r.from,r.to),g);
+  let cu=0, cs=0;
+  const users=s.map(x=>cu+=agg(x.b).users);
+  const sess =s.map(x=>cs+=agg(x.b).sessions);
+  makeChart('c-cum',{type:'line',data:{labels:s.map(x=>x.label),datasets:[
+    {label:'見に来た人（合計）',data:users,borderColor:'#8b6f47',backgroundColor:'rgba(139,111,71,.12)',fill:true,tension:.25,pointRadius:0,borderWidth:2},
+    {label:'訪問回数（合計）',  data:sess, borderColor:'#c9a84c',backgroundColor:'transparent',tension:.25,pointRadius:0,borderWidth:1.6},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+    scales:{y:{beginAtZero:true,...gridCfg},x:{...gridCfg,ticks:{font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}}}}});
+}
+
+/* はじめて / くり返し の円グラフ */
+function renderNewRet(m){
+  const nu=m.newUsers, re=Math.max(0,m.users-m.newUsers);
+  if(!m.users){makeChart('c-newret',{type:'pie',data:{labels:['データなし'],datasets:[{data:[1],backgroundColor:['#f0e8da']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});return;}
+  makeChart('c-newret',{type:'pie',data:{labels:['はじめての人','くり返し来た人'],datasets:[
+    {data:[nu,re],backgroundColor:['#c9a84c','#8b6f47'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>c.label+' '+nf(c.raw)+'人（'+pct(c.raw/m.users)+'）'}}}}});
+}
+
+/* どこまで読まれたか */
+function renderScroll(m){
+  const steps=[25,50,75,90];
+  const vals=steps.map(k=>m.sc[k]||0);
+  if(!vals.some(v=>v>0)){makeChart('c-scroll',{type:'bar',data:{labels:['データなし'],datasets:[{data:[0],backgroundColor:'#f0e8da'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});return;}
+  makeChart('c-scroll',{type:'line',data:{labels:steps.map(s=>'上から'+s+'%'),datasets:[
+    {label:'ここまで進んだ回数',data:vals,borderColor:'#8b6f47',backgroundColor:'rgba(139,111,71,.14)',fill:true,tension:.25,pointRadius:3,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>nf(c.raw)+'回（ページを開いた回数の'+pct(m.pv?c.raw/m.pv:0)+'）'}}},
+      scales:{y:{beginAtZero:true,...gridCfg},x:gridCfg}}});
+}
+
+/* どこで見るのをやめたか（全セクション + 表） */
 function renderExit(m){
-  const rows=Object.entries(m.ex).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(!rows.length){makeChart('c-exit',{type:'bar',data:{labels:['データなし'],datasets:[{data:[0],backgroundColor:'#f0e8da'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});return;}
-  makeChart('c-exit',{type:'bar',data:{labels:rows.map(r=>r[0]),datasets:[{label:'離脱数',data:rows.map(r=>r[1]),backgroundColor:'rgba(192,112,112,.55)',borderRadius:3}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{beginAtZero:true,...gridCfg},y:{...gridCfg,ticks:{font:{size:10}}}}}});
+  const rows=Object.entries(m.ex).sort((a,b)=>b[1]-a[1]);
+  const box=document.getElementById('box-exit');
+  const el=document.getElementById('t-exit');
+  if(!rows.length){
+    box.style.height='120px';
+    makeChart('c-exit',{type:'bar',data:{labels:['まだデータがありません'],datasets:[{data:[0],backgroundColor:'#f0e8da'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+    el.innerHTML='';
+    return;
+  }
+  box.style.height=Math.max(180,rows.length*30+40)+'px';
+  const total=rows.reduce((a,b)=>a+b[1],0);
+  makeChart('c-exit',{type:'bar',data:{labels:rows.map(r=>r[0]),datasets:[
+    {label:'ここでやめた回数',data:rows.map(r=>r[1]),backgroundColor:'rgba(192,112,112,.55)',borderColor:'#c07070',borderWidth:1,borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>nf(c.raw)+'回（全体の'+pct(c.raw/total)+'）'}}},
+      scales:{x:{beginAtZero:true,...gridCfg},y:{...gridCfg,ticks:{font:{size:11},autoSkip:false}}}}});
+
+  el.innerHTML=`<table><thead><tr><th>順位</th><th>見るのをやめた場所</th><th class="num">回数</th><th class="num">全体に占める割合</th><th>見かた</th></tr></thead><tbody>
+    ${rows.map((r,i)=>{
+      const share=r[1]/total;
+      let note='—';
+      if(i===0) note='<span class="tag" style="background:#f7e6e6;color:#a55">いちばん多い</span>';
+      else if(share>=0.15) note='<span class="tag">多め</span>';
+      return `<tr><td class="muted">${i+1}</td><td>${r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(share)}</td><td>${note}</td></tr>`;
+    }).join('')}
+    <tr><td></td><td><strong>合計</strong></td><td class="num"><strong>${nf(total)}</strong></td><td class="num">100%</td><td></td></tr>
+  </tbody></table>`;
 }
 
 function renderFunnel(m){
   const d=[m.fn[1],m.fn[2],m.fn[3]];
-  makeChart('c-funnel',{type:'bar',data:{labels:['認知','興味・関心','検討'],datasets:[{data:d,backgroundColor:['rgba(200,184,154,.8)','rgba(139,111,71,.8)','rgba(201,168,76,.9)'],borderRadius:4}]},
+  makeChart('c-funnel',{type:'bar',data:{labels:['見つけた','興味を持った','予約を考えた'],datasets:[{data:d,backgroundColor:['rgba(200,184,154,.8)','rgba(139,111,71,.8)','rgba(201,168,76,.9)'],borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>{const base=m.fn[1]||1;return nf(c.raw)+'件（認知比 '+pct(c.raw/base)+'）'}}}},
+      tooltip:{callbacks:{label:c=>{const base=m.fn[1]||1;return nf(c.raw)+'人（最初の段階の '+pct(c.raw/base)+'）'}}}},
       scales:{x:{beginAtZero:true,...gridCfg},y:gridCfg}}});
 }
 
@@ -571,19 +681,47 @@ function donut(id,obj,labelMap){
 const renderSrc=m=>donut('c-src',m.src,SRC_LABEL);
 const renderDev=m=>donut('c-dev',m.dev,DEV_LABEL);
 
+/* 最初に開いたページ（入口） */
+function renderLanding(m){
+  const el=document.getElementById('t-landing');
+  const rows=Object.entries(m.landing).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length){el.innerHTML='<div class="empty">入口ページの記録はこれから貯まります。<br>（この項目は本日から計測を開始しました）</div>';return;}
+  const total=rows.reduce((a,b)=>a+b[1],0);
+  el.innerHTML=`<table><thead><tr><th>最初に開いたページ</th><th class="num">入ってきた回数</th><th class="num">割合</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${pageName(r[0])}<div class="muted" style="font-size:.68rem">${r[0]}</div></td>
+      <td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/total)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+/* サイトで起きた行動の一覧 */
+function renderEvents(m){
+  const el=document.getElementById('t-events');
+  const rows=Object.entries(m.events).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length){el.innerHTML='<div class="empty">行動の一覧はこれから貯まります。<br>（この項目は本日から計測を開始しました）</div>';return;}
+  const total=rows.reduce((a,b)=>a+b[1],0);
+  const detail={
+    cta_click: Object.keys(m.cta).map(k=>(CTA_LABEL[k]||k)+' '+m.cta[k]).join('／'),
+  };
+  el.innerHTML=`<table><thead><tr><th>どんな動きか</th><th class="num">回数</th><th class="num">割合</th><th>内訳</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${EVENT_LABEL[r[0]]||r[0]}<div class="muted" style="font-size:.66rem">${r[0]}</div></td>
+      <td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/total)}</td>
+      <td class="muted">${detail[r[0]]||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
 /* 流入元別・デバイス別CVRは、日次バケットに含まれる粒度の都合上
    セッション数のみ正確。CVRは全体クリックを按分せず「未接続」と明示する。 */
 function renderSegments(m){
   const el=document.getElementById('t-segments');
   const srcRows=Object.entries(m.src).sort((a,b)=>b[1]-a[1]);
   const devRows=Object.entries(m.dev).sort((a,b)=>b[1]-a[1]);
-  if(!srcRows.length&&!devRows.length){el.innerHTML='<div class="empty">流入元・デバイスの計測はトラッカーv2から開始します。<br>反映まで数日お待ちください。</div>';return;}
+  if(!srcRows.length&&!devRows.length){el.innerHTML='<div class="empty">来たきっかけ・使っている機械の記録はこれから貯まります。</div>';return;}
   const tot=m.sessions||1;
-  el.innerHTML=`<table><thead><tr><th>セグメント</th><th class="num">セッション</th><th class="num">構成比</th><th>メモ</th></tr></thead><tbody>
-    ${srcRows.map(r=>`<tr><td>流入元：${SRC_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td><td class="muted">—</td></tr>`).join('')}
-    ${devRows.map(r=>`<tr><td>デバイス：${DEV_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td><td class="muted">—</td></tr>`).join('')}
+  el.innerHTML=`<table><thead><tr><th>区分</th><th class="num">訪問回数</th><th class="num">割合</th></tr></thead><tbody>
+    ${srcRows.map(r=>`<tr><td>来たきっかけ：${SRC_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td></tr>`).join('')}
+    ${devRows.map(r=>`<tr><td>使っている機械：${DEV_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td></tr>`).join('')}
   </tbody></table>
-  <div class="muted" style="font-size:.72rem;margin-top:10px">セグメント別のコンバージョン率は、GA4 Data API 接続（Phase 4）で対応します。</div>`;
+  <div class="muted" style="font-size:.72rem;margin-top:10px">「きっかけごとに何人が予約したか」は、GA4との接続（次の段階）で出せるようになります。</div>`;
 }
 
 /* ================================================================
@@ -818,6 +956,10 @@ function demoData(){
       hr,ctahr,
       pg:{'/':{pv:Math.round(pv*0.78),s:Math.round(s*0.8),line:Math.round(line*0.72),cta:line,eng:Math.round(s*0.8*70)},
           '/recruit.html':{pv:Math.round(pv*0.22),s:Math.round(s*0.2),line:Math.round(line*0.28),cta:Math.round(line*0.3),eng:Math.round(s*0.2*145)}},
+      lp:{'/':Math.round(s*0.83),'/recruit.html':Math.max(0,s-Math.round(s*0.83))},
+      ev:{page_view:pv, section_view:Math.round(pv*4.2), scroll_depth:Math.round(pv*1.3),
+          insight_category_reached:Math.round(s*1.8), section_exit:Math.round(s*0.95),
+          cta_click:line+Math.round(line*0.25), engagement_ping:Math.round(s*0.4)},
       src:{organic:Math.round(s*0.31),social:Math.round(s*0.34),direct:Math.round(s*0.24),referral:Math.round(s*0.11)},
       dev:{mobile:Math.round(s*0.81),desktop:Math.round(s*0.14),tablet:Math.round(s*0.05)},
       ex:{'ヒーロー':Math.round(s*0.30),'メニュー':Math.round(s*0.14),'スタッフ':Math.round(s*0.11),'初回特典':Math.round(s*0.09),'アクセス':Math.round(s*0.07),'予約CTA':Math.round(s*0.05)},
@@ -868,11 +1010,12 @@ async function load(){
 
 function showEmptyAll(){
   document.getElementById('kpis').innerHTML=
-    ['ユーザー数','セッション','LINE予約クリック','LINE予約クリック率'].map(l=>
+    ['見に来た人','訪問回数','LINE予約を押した','予約が押された割合'].map(l=>
     `<div class="kpi"><div class="k-label">${l}</div><div class="k-val muted">—</div><div class="k-sub">データ接続待ち</div></div>`).join('');
-  ['c-traffic','c-line','c-hour','c-dow','c-exit','c-funnel','c-src','c-dev'].forEach(id=>{if(charts[id])charts[id].destroy();});
-  document.getElementById('t-pages').innerHTML='<div class="empty">データ接続待ち</div>';
-  document.getElementById('t-segments').innerHTML='<div class="empty">データ接続待ち</div>';
+  ['c-traffic','c-cum','c-newret','c-line','c-hour','c-dow','c-exit','c-scroll','c-funnel','c-src','c-dev'].forEach(id=>{if(charts[id])charts[id].destroy();});
+  ['t-pages','t-events','t-exit','t-landing','t-segments'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.innerHTML='<div class="empty">データ接続待ち</div>';
+  });
   document.getElementById('a-body').innerHTML='<div class="empty">計測データが届き次第、自動で総評と改善施策を表示します。<br>架空の数値は表示しません。</div>';
   document.getElementById('a-period').textContent='';
 }
