@@ -28,6 +28,13 @@
 
   .wrap{max-width:1180px;margin:0 auto;padding:26px 20px 80px}
 
+  /* 見る対象の切替タブ */
+  .page-tabs{display:flex;gap:0;margin-bottom:18px;background:var(--white);border:1px solid var(--beige);border-radius:10px;padding:4px}
+  .page-tabs button{flex:1;padding:11px 14px;border:none;background:transparent;cursor:pointer;font-size:.85rem;color:var(--brown);border-radius:7px;transition:.15s;font-family:inherit;letter-spacing:.03em}
+  .page-tabs button.active{background:var(--dark);color:var(--white)}
+  .page-tabs button:not(.active):hover{background:var(--beige)}
+  .scope-note{font-size:.7rem;color:var(--taupe);margin-top:8px}
+
   /* ---- controls ---- */
   .controls{background:var(--white);border:1px solid var(--beige);border-radius:10px;padding:16px 18px;margin-bottom:22px}
   .ctl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -134,6 +141,13 @@
 </header>
 
 <div class="wrap">
+  <!-- 見る対象の切替（集客サイト / 求人LP） -->
+  <div class="page-tabs" id="page-tabs">
+    <button data-p="all"     class="tab active">サイト全体</button>
+    <button data-p="index">集客サイト（美容室）</button>
+    <button data-p="recruit">求人LP（採用）</button>
+  </div>
+
   <div class="status"><span class="dot load" id="dot"></span><span id="status-text">データを読み込んでいます…</span></div>
 
   <!-- ============ 期間コントロール ============ -->
@@ -243,12 +257,12 @@
   <div class="grid2">
     <div class="card">
       <h2>来たきっかけ</h2>
-      <div class="h-note">検索＝Googleなどで探して／SNS＝Instagram等から／直接＝URLやブックマーク</div>
+      <div class="h-note" id="note-src">検索＝Googleなどで探して／SNS＝Instagram等から／直接＝URLやブックマーク</div>
       <div class="chart-box"><canvas id="c-src"></canvas></div>
     </div>
     <div class="card">
       <h2>使っている機械</h2>
-      <div class="h-note">スマホ・PC・タブレットの内訳</div>
+      <div class="h-note" id="note-dev">スマホ・PC・タブレットの内訳</div>
       <div class="chart-box"><canvas id="c-dev"></canvas></div>
     </div>
     <div class="card full">
@@ -295,7 +309,7 @@ const EVENT_LABEL = {
 };
 const PALETTE   = ['#8b6f47','#c9a84c','#c8b89a','#a68a64','#d9c9a8','#6f5636','#e0d0b0'];
 
-const state = {gran:'day', preset:'28d', from:null, to:null, cmp:'prev', demo:false};
+const state = {gran:'day', preset:'28d', from:null, to:null, cmp:'prev', demo:false, page:'all'};
 let RAW = null;       // {daily:[], exact:{}}
 const charts = {};
 
@@ -354,11 +368,32 @@ function slice(from,to){
   return RAW.daily.filter(b=>b.d>=from && b.d<=to);
 }
 
+/* 見る対象（サイト全体 / 集客サイト / 求人LP）に合わせて1日分を取り出す。
+   来たきっかけ・機械・行動一覧はサイト全体でしか記録していないため、
+   ページを絞ったときは空にして、画面側で「全体のみ」と表示します。 */
+function isRecruitPath(p){ return String(p).indexOf('recruit')!==-1; }
+
+function scopeOf(b){
+  if(state.page==='all') return b;
+  const p=(b.pp||{})[state.page];
+  if(!p) return null;
+  const pg={};
+  Object.keys(b.pg||{}).forEach(k=>{
+    if((state.page==='recruit')===isRecruitPath(k)) pg[k]=b.pg[k];
+  });
+  const lp={};
+  if(p.lp) lp[state.page==='recruit'?'/recruit.html':'/']=p.lp;
+  return {d:b.d,u:p.u,nu:p.nu,s:p.s,pv:p.pv,eng:p.eng,cta:p.cta||{},hr:p.hr||{},
+          ctahr:p.ctahr||{},ex:p.ex||{},fn:p.fn||{1:0,2:0,3:0},sc:p.sc||{},
+          pg:pg,lp:lp,ev:{},src:{},dev:{}};
+}
+
 function agg(buckets){
   const m={users:0,newUsers:0,sessions:0,pv:0,eng:0,cta:{},hr:new Array(24).fill(0),
            ctahr:new Array(24).fill(0),dowS:new Array(7).fill(0),dowL:new Array(7).fill(0),
            pages:{},landing:{},events:{},src:{},dev:{},ex:{},fn:{1:0,2:0,3:0},sc:{},days:buckets.length};
-  buckets.forEach(b=>{
+  buckets.forEach(raw=>{
+    const b=scopeOf(raw); if(!b) return;
     m.users+=b.u; m.newUsers+=b.nu; m.sessions+=b.s; m.pv+=b.pv; m.eng+=b.eng;
     const dw=dowOf(b.d);
     m.dowS[dw]+=b.s;
@@ -478,7 +513,7 @@ function renderKPI(cur,prev){
     {l:'予約を考えた割合',v:pct(cur.sessions?cur.fn[3]/cur.sessions:0), d:null,               sub:'料金・よくある質問・予約ボタンまで見た割合'},
     {l:'はじめての人の割合',v:pct(cur.newRate),   d:deltaPt(cur.newRate,prev&&prev.newRate),  sub:'低いほど常連さんに見られています'},
     {l:'電話など他の行動',v:nf(cur.ctaTotal-cur.line), d:delta(cur.ctaTotal-cur.line,prev&&(prev.ctaTotal-prev.line)), sub:Object.keys(cur.cta).filter(k=>k!=='line').map(k=>(CTA_LABEL[k]||k)+' '+cur.cta[k]).join('／')||'まだありません'},
-    {l:'記録できた動きの数',v:nf(Object.values(cur.events).reduce((a,b)=>a+b,0)), d:null,     sub:'クリックやスクロールを含む全記録数'},
+    {l:'記録できた動きの数',v:scoped()?'—':nf(Object.values(cur.events).reduce((a,b)=>a+b,0)), d:null, sub:scoped()?'サイト全体でのみ記録':'クリックやスクロールを含む全記録数'},
   ];
   document.getElementById('kpis').innerHTML = items.map(i=>`
     <div class="kpi ${i.cls||''}">
@@ -678,8 +713,20 @@ function donut(id,obj,labelMap){
   makeChart(id,{type:'doughnut',data:{labels:rows.map(r=>labelMap[r[0]]||r[0]),datasets:[{data:rows.map(r=>r[1]),backgroundColor:PALETTE,borderWidth:2,borderColor:'#fff'}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:11}}}}}});
 }
-const renderSrc=m=>donut('c-src',m.src,SRC_LABEL);
-const renderDev=m=>donut('c-dev',m.dev,DEV_LABEL);
+const SCOPE_LABEL={all:'サイト全体',index:'集客サイト（美容室）',recruit:'求人LP（採用）'};
+const scoped=()=>state.page!=='all';
+const SITEWIDE_NOTE='この項目はサイト全体でのみ記録しています（ページを分けた数字は出せません）';
+
+function renderSrc(m){
+  document.getElementById('note-src').textContent = scoped()
+    ? SITEWIDE_NOTE : '検索＝Googleなどで探して／SNS＝Instagram等から／直接＝URLやブックマーク';
+  donut('c-src', scoped()?{}:m.src, SRC_LABEL);
+}
+function renderDev(m){
+  document.getElementById('note-dev').textContent = scoped()
+    ? SITEWIDE_NOTE : 'スマホ・PC・タブレットの内訳';
+  donut('c-dev', scoped()?{}:m.dev, DEV_LABEL);
+}
 
 /* 最初に開いたページ（入口） */
 function renderLanding(m){
@@ -696,6 +743,7 @@ function renderLanding(m){
 /* サイトで起きた行動の一覧 */
 function renderEvents(m){
   const el=document.getElementById('t-events');
+  if(scoped()){el.innerHTML='<div class="empty">'+SITEWIDE_NOTE+'。<br>上のタブを「サイト全体」に戻すと表示されます。</div>';return;}
   const rows=Object.entries(m.events).sort((a,b)=>b[1]-a[1]);
   if(!rows.length){el.innerHTML='<div class="empty">行動の一覧はこれから貯まります。<br>（この項目は本日から計測を開始しました）</div>';return;}
   const total=rows.reduce((a,b)=>a+b[1],0);
@@ -715,6 +763,7 @@ function renderSegments(m){
   const el=document.getElementById('t-segments');
   const srcRows=Object.entries(m.src).sort((a,b)=>b[1]-a[1]);
   const devRows=Object.entries(m.dev).sort((a,b)=>b[1]-a[1]);
+  if(scoped()){el.innerHTML='<div class="empty">'+SITEWIDE_NOTE+'。<br>上のタブを「サイト全体」に戻すと表示されます。</div>';return;}
   if(!srcRows.length&&!devRows.length){el.innerHTML='<div class="empty">来たきっかけ・使っている機械の記録はこれから貯まります。</div>';return;}
   const tot=m.sessions||1;
   el.innerHTML=`<table><thead><tr><th>区分</th><th class="num">訪問回数</th><th class="num">割合</th></tr></thead><tbody>
@@ -905,7 +954,8 @@ function analyze(cur,prev,r,c){
 function renderAnalysis(cur,prev,r,c){
   const a=analyze(cur,prev,r,c);
   document.getElementById('a-period').textContent =
-    r.from+' 〜 '+r.to + (c?'（比較： '+c.from+' 〜 '+c.to+'）':'（比較なし）') + (state.demo?' ／ DEMO DATA':'');
+    SCOPE_LABEL[state.page]+' ／ '+r.from+' 〜 '+r.to +
+    (c?'（比較： '+c.from+' 〜 '+c.to+'）':'（比較なし）') + (state.demo?' ／ DEMO DATA':'');
   document.getElementById('a-body').innerHTML=`
     ${a.warnings.map(w=>`<div class="warn">⚠ ${w}</div>`).join('')}
     <div class="verdict">
@@ -964,7 +1014,23 @@ function demoData(){
       dev:{mobile:Math.round(s*0.81),desktop:Math.round(s*0.14),tablet:Math.round(s*0.05)},
       ex:{'ヒーロー':Math.round(s*0.30),'メニュー':Math.round(s*0.14),'スタッフ':Math.round(s*0.11),'初回特典':Math.round(s*0.09),'アクセス':Math.round(s*0.07),'予約CTA':Math.round(s*0.05)},
       fn:{1:s,2:Math.round(s*0.55),3:Math.round(s*0.21)},
-      sc:{25:Math.round(pv*0.58),50:Math.round(pv*0.36),75:Math.round(pv*0.21),90:Math.round(pv*0.12)}});
+      sc:{25:Math.round(pv*0.58),50:Math.round(pv*0.36),75:Math.round(pv*0.21),90:Math.round(pv*0.12)},
+      pp:{
+        index:{pv:Math.round(pv*0.78),s:Math.round(s*0.8),u:Math.round(u*0.8),nu:Math.round(nu*0.82),
+               eng:Math.round(s*0.8*70),cta:{line:Math.round(line*0.72),phone:Math.round(line*0.2)},
+               hr:hr,ctahr:ctahr,
+               ex:{'ヒーロー':Math.round(s*0.26),'メニュー':Math.round(s*0.14),'スタッフ':Math.round(s*0.10),'初回特典':Math.round(s*0.08),'アクセス':Math.round(s*0.06)},
+               fn:{1:Math.round(s*0.8),2:Math.round(s*0.45),3:Math.round(s*0.17)},
+               sc:{25:Math.round(pv*0.46),50:Math.round(pv*0.28),75:Math.round(pv*0.16),90:Math.round(pv*0.09)},
+               lp:Math.round(s*0.83)},
+        recruit:{pv:Math.round(pv*0.22),s:Math.round(s*0.2),u:Math.round(u*0.2),nu:Math.round(nu*0.18),
+               eng:Math.round(s*0.2*145),cta:{line:Math.round(line*0.28),recruit:Math.max(0,Math.round(s*0.02))},
+               hr:{},ctahr:{},
+               ex:{'ヒーロー':Math.round(s*0.05),'給与':Math.round(s*0.04),'働き方・シフト':Math.round(s*0.03),'お問い合わせ':Math.round(s*0.02)},
+               fn:{1:Math.round(s*0.2),2:Math.round(s*0.12),3:Math.round(s*0.05)},
+               sc:{25:Math.round(pv*0.12),50:Math.round(pv*0.08),75:Math.round(pv*0.05),90:Math.round(pv*0.03)},
+               lp:Math.max(0,s-Math.round(s*0.83))}
+      }});
   }
   return {daily,firstDate:daily[0].d,lastDate:daily[daily.length-1].d,totalRows:daily.length*20,exact:{}};
 }
@@ -1057,6 +1123,12 @@ document.getElementById('btn-apply').addEventListener('click',()=>{
   if(!f||!t||f>t){ alert('期間を正しく指定してください'); return; }
   state.from=f; state.to=t;
   if(state.demo){ renderAll(); } else { load(); }
+});
+document.getElementById('page-tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.page=b.dataset.p;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('active',x===b));
+  if(RAW&&RAW.daily&&RAW.daily.length) renderAll();
 });
 document.getElementById('btn-reload').addEventListener('click',load);
 document.getElementById('btn-demo').addEventListener('click',e=>{

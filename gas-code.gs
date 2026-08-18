@@ -30,15 +30,26 @@
 // ================================================================
 // v2: 日次バケット集計（追加スコープ不要 / PropertiesService のみ）
 // dashboard2.html はこの ?action=v2 を読みます。
+//
+// bucket 直下 = サイト全体の数値
+// bucket.pp.index / bucket.pp.recruit = ページ別の同じ数値
+//   → ダッシュボード上部の「全体 / 集客サイト / 求人LP」切替に使います
 // ================================================================
 const V2_TZ      = "Asia/Tokyo";
 const V2_PREFIX  = "d2_";
 const V2_KEEP    = 400;   // 保持日数
-const V2_MAXSEEN = 1500;  // 1日あたりの重複判定キー上限
+const V2_MAXSEEN = 2500;  // 1日あたりの重複判定キー上限
 
 function v2NewBucket() {
   return { pv:0, eng:0, u:0, nu:0, s:0, seen:{}, cta:{}, hr:{}, ctahr:{},
-           pg:{}, lp:{}, ev:{}, src:{}, dev:{}, ex:{}, fn:{1:0,2:0,3:0}, sc:{}, trunc:0 };
+           pg:{}, lp:{}, ev:{}, src:{}, dev:{}, ex:{}, fn:{1:0,2:0,3:0}, sc:{},
+           pp:{}, trunc:0 };
+}
+
+// ページ別の内訳（全体と同じ形。src/dev/ev はサイト全体でのみ持ちます）
+function v2NewPage() {
+  return { pv:0, eng:0, u:0, nu:0, s:0, cta:{}, hr:{}, ctahr:{},
+           ex:{}, fn:{1:0,2:0,3:0}, sc:{}, lp:0 };
 }
 
 function v2Page(b, path) {
@@ -59,11 +70,15 @@ function v2Record(data) {
     const b     = JSON.parse(props.getProperty(key) || "null") || v2NewBucket();
     if (!b.lp) b.lp = {};   // 既存バケットとの互換
     if (!b.ev) b.ev = {};
+    if (!b.pp) b.pp = {};
 
     const sid  = data.sid || "";
     const uid  = data.uid || sid;
     const ev   = data.event || "";
     const path = data.path || (data.page === "recruit" ? "/recruit.html" : "/");
+    const pkey = (data.page === "recruit") ? "recruit" : "index";
+    if (!b.pp[pkey]) b.pp[pkey] = v2NewPage();
+    const P = b.pp[pkey];
 
     const mark = function (k) {
       if (b.seen[k]) return false;
@@ -71,19 +86,25 @@ function v2Record(data) {
       b.seen[k] = 1; return true;
     };
 
-    // 全イベントの発生数（イベント一覧用）
+    // 全イベントの発生数（イベント一覧用・サイト全体）
     if (ev) b.ev[ev] = (b.ev[ev] || 0) + 1;
 
     if (ev === "page_view") {
-      b.pv++;
+      b.pv++; P.pv++;
       b.hr[hour] = (b.hr[hour] || 0) + 1;
-      if (uid && mark("u|" + uid)) { b.u++; if (data.is_new == 1) b.nu++; }
+      P.hr[hour] = (P.hr[hour] || 0) + 1;
+
+      if (uid && mark("u|" + uid))                { b.u++; if (data.is_new == 1) b.nu++; }
+      if (uid && mark("pu|" + pkey + "|" + uid))  { P.u++; if (data.is_new == 1) P.nu++; }
+
       if (sid && mark("s|" + sid)) {
         b.s++;
         if (data.src)    b.src[data.src]    = (b.src[data.src] || 0) + 1;
         if (data.device) b.dev[data.device] = (b.dev[data.device] || 0) + 1;
-        b.lp[path] = (b.lp[path] || 0) + 1;   // 入口ページ（そのセッションで最初に見たページ）
+        b.lp[path] = (b.lp[path] || 0) + 1;   // 入口ページ
       }
+      if (sid && mark("ps|" + pkey + "|" + sid)) { P.s++; P.lp++; }
+
       const p = v2Page(b, path);
       p.pv++;
       if (sid && mark("p|" + sid + "|" + path)) p.s++;
@@ -92,28 +113,37 @@ function v2Record(data) {
     if (ev === "cta_click" || ev === "form_submit") {
       const t = data.cta_type || "other";
       b.cta[t] = (b.cta[t] || 0) + 1;
+      P.cta[t] = (P.cta[t] || 0) + 1;
       const p = v2Page(b, path);
       p.cta++;
-      if (t === "line") { p.line++; b.ctahr[hour] = (b.ctahr[hour] || 0) + 1; }
+      if (t === "line") {
+        p.line++;
+        b.ctahr[hour] = (b.ctahr[hour] || 0) + 1;
+        P.ctahr[hour] = (P.ctahr[hour] || 0) + 1;
+      }
     }
 
     if (ev === "section_exit") {
       const sec = data.last_section || data.section_name;
-      if (sec) b.ex[sec] = (b.ex[sec] || 0) + 1;
+      if (sec) { b.ex[sec] = (b.ex[sec] || 0) + 1; P.ex[sec] = (P.ex[sec] || 0) + 1; }
     }
 
     if (ev === "section_exit" || ev === "engagement_ping") {
       const d = Number(data.engaged_delta || 0);
-      if (d > 0 && d < 3600) { b.eng += d; v2Page(b, path).eng += d; }
+      if (d > 0 && d < 3600) { b.eng += d; P.eng += d; v2Page(b, path).eng += d; }
     }
 
     if (ev === "insight_category_reached") {
       const lv = parseInt(data.category_level, 10) || 0;
-      for (var i = 1; i <= lv; i++) if (sid && mark("f" + i + "|" + sid)) b.fn[i]++;
+      for (var i = 1; i <= lv; i++) {
+        if (sid && mark("f"  + i + "|" + sid))               b.fn[i]++;
+        if (sid && mark("pf" + i + "|" + pkey + "|" + sid))  P.fn[i]++;
+      }
     }
 
     if (ev === "scroll_depth" && data.depth_percent) {
       b.sc[data.depth_percent] = (b.sc[data.depth_percent] || 0) + 1;
+      P.sc[data.depth_percent] = (P.sc[data.depth_percent] || 0) + 1;
     }
 
     props.setProperty(key, JSON.stringify(b));
@@ -134,7 +164,7 @@ function v2Api() {
     const b = JSON.parse(all[V2_PREFIX + d]);
     return { d:d, u:b.u, nu:b.nu, s:b.s, pv:b.pv, eng:Math.round(b.eng),
              cta:b.cta, hr:b.hr, ctahr:b.ctahr, pg:b.pg, lp:b.lp || {}, ev:b.ev || {},
-             src:b.src, dev:b.dev, ex:b.ex, fn:b.fn, sc:b.sc };
+             src:b.src, dev:b.dev, ex:b.ex, fn:b.fn, sc:b.sc, pp:b.pp || {} };
   });
 
   return {
