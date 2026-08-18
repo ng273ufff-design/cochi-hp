@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>cochi アナリティクス v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --cream:#faf6f0; --beige:#f0e8da; --taupe:#c8b89a; --brown:#8b6f47;
+    --dark:#3d2b1a; --gold:#c9a84c; --text:#4a3728; --white:#fff;
+    --up:#5f9e5f; --down:#c07070; --line:#06c755;
+    --grid:#e8ded0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased}
+  header{background:var(--dark);color:var(--white);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  header h1{font-size:1rem;font-weight:400;letter-spacing:.18em}
+  header .sub{font-size:.7rem;color:var(--taupe);margin-top:3px;letter-spacing:.05em}
+  .head-right{display:flex;align-items:center;gap:10px}
+  .badge{font-size:.65rem;letter-spacing:.1em;padding:4px 10px;border-radius:3px;border:1px solid var(--taupe);color:var(--taupe)}
+  .badge.live{border-color:#7cb87c;color:#a8d6a8}
+  .badge.demo{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.12)}
+  .badge.wait{border-color:#c87c7c;color:#e0a8a8}
+  .btn{background:transparent;border:1px solid var(--taupe);color:var(--taupe);padding:6px 14px;border-radius:3px;cursor:pointer;font-size:.75rem;letter-spacing:.05em;transition:.2s;font-family:inherit}
+  .btn:hover{background:var(--taupe);color:var(--dark)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 20px 80px}
+
+  /* ---- controls ---- */
+  .controls{background:var(--white);border:1px solid var(--beige);border-radius:10px;padding:16px 18px;margin-bottom:22px}
+  .ctl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ctl-row + .ctl-row{margin-top:12px;padding-top:12px;border-top:1px solid var(--beige)}
+  .ctl-label{font-size:.68rem;letter-spacing:.12em;color:var(--taupe);text-transform:uppercase;min-width:64px}
+  .seg{display:inline-flex;background:var(--beige);border-radius:6px;padding:3px}
+  .seg button{border:none;background:transparent;padding:7px 16px;font-size:.8rem;color:var(--brown);cursor:pointer;border-radius:4px;font-family:inherit;transition:.15s}
+  .seg button.on{background:var(--dark);color:var(--white)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--beige);background:var(--white);color:var(--brown);padding:6px 13px;border-radius:16px;font-size:.75rem;cursor:pointer;font-family:inherit;transition:.15s}
+  .chip:hover{border-color:var(--taupe)}
+  .chip.on{background:var(--brown);color:var(--white);border-color:var(--brown)}
+  input[type=date]{font-family:inherit;font-size:.8rem;padding:6px 9px;border:1px solid var(--beige);border-radius:5px;color:var(--text);background:var(--white)}
+  .range-note{font-size:.72rem;color:var(--taupe);margin-left:auto}
+
+  /* ---- KPI ---- */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .kpi{background:var(--white);border-radius:10px;padding:16px 18px;border-top:3px solid var(--gold);position:relative}
+  .kpi.line-kpi{border-top-color:var(--line)}
+  .kpi .k-label{font-size:.66rem;letter-spacing:.1em;color:var(--taupe);text-transform:uppercase;margin-bottom:9px}
+  .kpi .k-val{font-size:1.85rem;font-weight:300;color:var(--dark);line-height:1;letter-spacing:-.01em}
+  .kpi .k-val small{font-size:.85rem;color:var(--taupe);margin-left:2px}
+  .kpi .k-delta{font-size:.74rem;margin-top:8px;display:flex;align-items:center;gap:5px}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--taupe)}
+  .kpi .k-sub{font-size:.68rem;color:var(--taupe);margin-top:4px}
+
+  /* ---- cards ---- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+  .grid2>*{min-width:0}
+  .card{background:var(--white);border-radius:10px;padding:20px 22px;min-width:0}
+  .card.full{grid-column:1/-1}
+  .card h2{font-size:.72rem;letter-spacing:.14em;color:var(--taupe);text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .card .h-note{font-size:.7rem;color:var(--taupe);margin-bottom:14px;font-weight:400;letter-spacing:0}
+  .chart-box{position:relative;height:260px}
+  .chart-box.tall{height:320px}
+  .sec-title{font-size:.68rem;letter-spacing:.22em;color:var(--brown);text-transform:uppercase;margin:32px 0 14px;padding-left:2px;border-left:3px solid var(--gold);padding-left:10px}
+
+  /* ---- table ---- */
+  /* 横に広い表は、ページ全体ではなく表の中だけを横スクロールさせる */
+  #t-pages,#t-segments{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;min-width:0}
+  #t-pages table{min-width:620px}
+  #t-segments table{min-width:420px}
+  table{width:100%;border-collapse:collapse;font-size:.8rem}
+  th{text-align:left;font-weight:400;font-size:.68rem;letter-spacing:.08em;color:var(--taupe);text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--beige)}
+  td{padding:9px 10px;border-bottom:1px solid #f5efe6}
+  tr:last-child td{border-bottom:none}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .bar-cell{position:relative}
+  .bar{height:6px;background:var(--line);border-radius:3px;display:inline-block;vertical-align:middle;margin-right:7px;opacity:.75}
+  .muted{color:var(--taupe)}
+  .tag{display:inline-block;font-size:.65rem;padding:2px 7px;border-radius:3px;background:var(--beige);color:var(--brown);letter-spacing:.04em}
+
+  /* ---- analysis ---- */
+  .analysis{background:var(--dark);color:#f0e6d8;border-radius:12px;padding:28px 30px;margin-top:34px}
+  .analysis h2{font-size:.72rem;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+  .analysis .a-sub{font-size:.7rem;color:var(--taupe);margin-bottom:22px}
+  .verdict{background:rgba(255,255,255,.05);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:18px 22px;margin-bottom:24px}
+  .verdict h3{font-size:.78rem;letter-spacing:.1em;color:var(--gold);margin-bottom:12px;font-weight:400}
+  .verdict ol{margin:0;padding-left:20px}
+  .verdict li{font-size:.92rem;line-height:1.85;color:#fff}
+  .summary-text p{font-size:.86rem;line-height:2;margin-bottom:12px;color:#e8dccb}
+  .summary-text strong{color:#fff;font-weight:500}
+  .warn{font-size:.76rem;color:var(--gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:10px 14px;margin-bottom:18px;line-height:1.7}
+  .actions{margin-top:26px;display:grid;gap:12px}
+  .action{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:16px 18px}
+  .action-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .stars{color:var(--gold);font-size:.85rem;letter-spacing:.12em}
+  .action-cat{font-size:.66rem;letter-spacing:.1em;padding:3px 9px;border-radius:3px;background:rgba(201,168,76,.18);color:var(--gold)}
+  .action-title{font-size:.98rem;color:#fff;font-weight:500;flex:1;min-width:200px}
+  .action dl{display:grid;grid-template-columns:76px 1fr;gap:5px 14px;font-size:.79rem;line-height:1.75}
+  .action dt{color:var(--taupe);letter-spacing:.05em}
+  .action dd{color:#e0d4c2}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--taupe);font-size:.85rem;line-height:1.9}
+  .status{background:var(--beige);border:1px solid var(--taupe);border-radius:6px;padding:10px 15px;font-size:.78rem;color:var(--brown);margin-bottom:20px;display:flex;align-items:center;gap:9px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--taupe);flex-shrink:0}
+  .dot.ok{background:#7cb87c}.dot.load{background:var(--gold);animation:pulse 1s infinite}.dot.err{background:#c87c7c}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  @media(max-width:900px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid2{grid-template-columns:1fr}
+    .wrap{padding:18px 14px 60px}
+    header{padding:14px 16px}
+    .ctl-label{min-width:auto}
+    .analysis{padding:22px 18px}
+    .action dl{grid-template-columns:1fr;gap:2px}
+    .action dt{margin-top:8px;font-size:.7rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>cochi ANALYTICS</h1>
+    <div class="sub">Hair&amp;Spa — 分析 / 改善ダッシュボード v2</div>
+  </div>
+  <div class="head-right">
+    <span class="badge" id="data-badge">CONNECTING…</span>
+    <button class="btn" id="btn-demo">デモ表示</button>
+    <button class="btn" id="btn-reload">更新</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="status"><span class="dot load" id="dot"></span><span id="status-text">データを読み込んでいます…</span></div>
+
+  <!-- ============ 期間コントロール ============ -->
+  <div class="controls">
+    <div class="ctl-row">
+      <span class="ctl-label">粒度</span>
+      <div class="seg" id="seg-gran">
+        <button data-g="day"    class="on">日</button>
+        <button data-g="month">月</button>
+        <button data-g="year">年</button>
+        <button data-g="custom">期間指定</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div id="custom-range" style="display:none;align-items:center;gap:8px">
+        <input type="date" id="d-from"> <span class="muted">〜</span> <input type="date" id="d-to">
+        <button class="btn" id="btn-apply">適用</button>
+      </div>
+      <span class="range-note" id="range-note"></span>
+    </div>
+    <div class="ctl-row">
+      <span class="ctl-label">比較</span>
+      <div class="seg" id="seg-cmp">
+        <button data-c="prev" class="on">前期間</button>
+        <button data-c="yoy">前年同期</button>
+        <button data-c="none">比較なし</button>
+      </div>
+      <span class="muted" style="font-size:.72rem" id="cmp-note"></span>
+    </div>
+  </div>
+
+  <!-- ============ KPI ============ -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ============ TRAFFIC ============ -->
+  <div class="sec-title">Traffic ／ アクセス</div>
+  <div class="grid2">
+    <div class="card full">
+      <h2>アクセス推移</h2>
+      <div class="h-note" id="note-traffic"></div>
+      <div class="chart-box tall"><canvas id="c-traffic"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ============ CONVERSION ============ -->
+  <div class="sec-title">Conversion ／ LINE予約</div>
+  <div class="grid2">
+    <div class="card full">
+      <h2>LINE予約クリック推移</h2>
+      <div class="h-note">棒＝クリック数／折れ線＝クリック率（クリック数 ÷ セッション数）</div>
+      <div class="chart-box tall"><canvas id="c-line"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>時間帯別</h2>
+      <div class="h-note">何時に予約行動が起きているか</div>
+      <div class="chart-box"><canvas id="c-hour"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>曜日別</h2>
+      <div class="h-note">月〜日の比較</div>
+      <div class="chart-box"><canvas id="c-dow"></canvas></div>
+    </div>
+    <div class="card full">
+      <h2>ページ別 LINEクリック率</h2>
+      <div class="h-note">アクセス → クリック → 率。率が高くアクセスが少ないページは、導線を増やす価値があります</div>
+      <div id="t-pages"></div>
+    </div>
+  </div>
+
+  <!-- ============ BEHAVIOR ============ -->
+  <div class="sec-title">Behavior ／ ページ内行動</div>
+  <div class="grid2">
+    <div class="card">
+      <h2>離脱セクション</h2>
+      <div class="h-note">最後に見ていた場所（多い順）</div>
+      <div class="chart-box"><canvas id="c-exit"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>行動ファネル</h2>
+      <div class="h-note">認知 → 興味・関心 → 検討</div>
+      <div class="chart-box"><canvas id="c-funnel"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ============ ACQUISITION ============ -->
+  <div class="sec-title">Acquisition ／ 流入</div>
+  <div class="grid2">
+    <div class="card">
+      <h2>流入元</h2>
+      <div class="h-note">セッション数の内訳</div>
+      <div class="chart-box"><canvas id="c-src"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>デバイス</h2>
+      <div class="h-note">セッション数の内訳</div>
+      <div class="chart-box"><canvas id="c-dev"></canvas></div>
+    </div>
+    <div class="card full">
+      <h2>流入元・デバイス別 コンバージョン</h2>
+      <div class="h-note">どこから来た人が予約しているか</div>
+      <div id="t-segments"></div>
+    </div>
+  </div>
+
+  <!-- ============ ANALYSIS ============ -->
+  <div class="analysis" id="analysis">
+    <h2>AI Analysis ／ 総評</h2>
+    <div class="a-sub" id="a-period"></div>
+    <div id="a-body"><div class="empty">データ待機中</div></div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   cochi analytics dashboard v2
+   数値 → グラフ → 統計 → 問題発見 → 総評 → 改善施策 まで一気通貫
+   ================================================================ */
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyEHajt85Ke0DBk9SED20zOBQ2QMG6_g2W8HhheyvWXBsF81fEMbHiCgu1wDJvfRXao/exec';
+
+const SRC_LABEL = {organic:'検索',social:'SNS',direct:'直接',referral:'他サイト',ad:'広告',campaign:'キャンペーン',internal:'サイト内'};
+const DEV_LABEL = {mobile:'スマホ',tablet:'タブレット',desktop:'PC'};
+const CTA_LABEL = {line:'LINE予約',phone:'電話',mail:'メール',recruit:'応募',instagram:'Instagram',map:'地図',contact_form:'問い合わせ送信',recruit_form:'応募フォーム送信'};
+const DOW_LABEL = ['日','月','火','水','木','金','土'];
+const PALETTE   = ['#8b6f47','#c9a84c','#c8b89a','#a68a64','#d9c9a8','#6f5636','#e0d0b0'];
+
+const state = {gran:'day', preset:'28d', from:null, to:null, cmp:'prev', demo:false};
+let RAW = null;       // {daily:[], exact:{}}
+const charts = {};
+
+/* ---------------- date utils ---------------- */
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
+const addMonths=(s,n)=>{const d=parse(s);d.setMonth(d.getMonth()+n);return fmt(d)};
+const addYears=(s,n)=>{const d=parse(s);d.setFullYear(d.getFullYear()+n);return fmt(d)};
+const diffDays=(a,b)=>Math.round((parse(b)-parse(a))/86400000)+1;
+const dowOf=s=>parse(s).getDay();
+const monthOf=s=>s.slice(0,7);
+const yearOf=s=>s.slice(0,4);
+const jpDate=s=>{const d=parse(s);return (d.getMonth()+1)+'/'+d.getDate()};
+
+/* ---------------- presets ---------------- */
+const PRESETS = {
+  day:  [{k:'7d',   label:'直近7日'},{k:'28d',label:'直近28日'},{k:'90d',label:'直近90日'},
+         {k:'tm',   label:'今月'},{k:'lm',label:'先月'}],
+  month:[{k:'12m',  label:'直近12ヶ月'},{k:'ty',label:'今年'},{k:'ly',label:'昨年'},{k:'all',label:'全期間'}],
+  year: [{k:'all',  label:'全期間'}],
+};
+
+function today(){ return RAW && RAW.lastDate ? RAW.lastDate : fmt(new Date()); }
+
+function resolveRange(){
+  const t = today();
+  const g = state.gran, p = state.preset;
+  if(g==='custom'){ return {from:state.from, to:state.to}; }
+  if(g==='year')  { return {from:RAW&&RAW.firstDate?RAW.firstDate:addYears(t,-3), to:t}; }
+  if(g==='month'){
+    if(p==='12m') return {from:monthOf(addMonths(t,-11))+'-01', to:t};
+    if(p==='ty')  return {from:yearOf(t)+'-01-01', to:t};
+    if(p==='ly')  return {from:(+yearOf(t)-1)+'-01-01', to:(+yearOf(t)-1)+'-12-31'};
+    return {from:RAW&&RAW.firstDate?RAW.firstDate:addYears(t,-2), to:t};
+  }
+  if(p==='7d')  return {from:addDays(t,-6),  to:t};
+  if(p==='28d') return {from:addDays(t,-27), to:t};
+  if(p==='90d') return {from:addDays(t,-89), to:t};
+  if(p==='tm')  return {from:monthOf(t)+'-01', to:t};
+  if(p==='lm'){ const lm=monthOf(addMonths(monthOf(t)+'-01',-1)); return {from:lm+'-01', to:fmt(new Date(+lm.slice(0,4),+lm.slice(5,7),0))}; }
+  return {from:addDays(t,-27), to:t};
+}
+
+function resolveCompare(r){
+  if(state.cmp==='none') return null;
+  if(state.cmp==='yoy')  return {from:addYears(r.from,-1), to:addYears(r.to,-1)};
+  const len = diffDays(r.from,r.to);
+  return {from:addDays(r.from,-len), to:addDays(r.from,-1)};
+}
+
+/* ---------------- aggregation ---------------- */
+function slice(from,to){
+  if(!RAW) return [];
+  return RAW.daily.filter(b=>b.d>=from && b.d<=to);
+}
+
+function agg(buckets){
+  const m={users:0,newUsers:0,sessions:0,pv:0,eng:0,cta:{},hr:new Array(24).fill(0),
+           ctahr:new Array(24).fill(0),dowS:new Array(7).fill(0),dowL:new Array(7).fill(0),
+           pages:{},src:{},dev:{},ex:{},fn:{1:0,2:0,3:0},sc:{},days:buckets.length};
+  buckets.forEach(b=>{
+    m.users+=b.u; m.newUsers+=b.nu; m.sessions+=b.s; m.pv+=b.pv; m.eng+=b.eng;
+    const dw=dowOf(b.d);
+    m.dowS[dw]+=b.s;
+    Object.keys(b.cta||{}).forEach(k=>m.cta[k]=(m.cta[k]||0)+b.cta[k]);
+    m.dowL[dw]+=(b.cta&&b.cta.line)||0;
+    Object.keys(b.hr||{}).forEach(h=>m.hr[+h]+=b.hr[h]);
+    Object.keys(b.ctahr||{}).forEach(h=>m.ctahr[+h]+=b.ctahr[h]);
+    Object.keys(b.pg||{}).forEach(p=>{
+      const s=m.pages[p]||(m.pages[p]={pv:0,s:0,line:0,cta:0,eng:0});
+      const x=b.pg[p]; s.pv+=x.pv; s.s+=x.s; s.line+=x.line; s.cta+=x.cta; s.eng+=x.eng;
+    });
+    Object.keys(b.src||{}).forEach(k=>m.src[k]=(m.src[k]||0)+b.src[k]);
+    Object.keys(b.dev||{}).forEach(k=>m.dev[k]=(m.dev[k]||0)+b.dev[k]);
+    Object.keys(b.ex ||{}).forEach(k=>m.ex[k] =(m.ex[k] ||0)+b.ex[k]);
+    Object.keys(b.sc ||{}).forEach(k=>m.sc[k] =(m.sc[k] ||0)+b.sc[k]);
+    if(b.fn){m.fn[1]+=b.fn[1]||0;m.fn[2]+=b.fn[2]||0;m.fn[3]+=b.fn[3]||0;}
+  });
+  m.line     = m.cta.line||0;
+  m.lineCVR  = m.sessions ? m.line/m.sessions : 0;
+  m.ctaTotal = Object.values(m.cta).reduce((a,b)=>a+b,0);
+  m.ctaCVR   = m.sessions ? m.ctaTotal/m.sessions : 0;
+  m.engAvg   = m.sessions ? m.eng/m.sessions : 0;
+  m.reach50  = m.pv ? (m.sc[50]||0)/m.pv : 0;
+  m.bounce   = m.pv ? 1-((m.sc[25]||0)/m.pv) : 0;   // 25%未満で離脱した割合（近似）
+  m.repeatRate = m.users ? 1-(m.newUsers/m.users) : 0;
+  return m;
+}
+
+/* 粒度に応じた系列を作る */
+function series(buckets,gran){
+  if(gran==='day') return buckets.map(b=>({key:b.d,label:jpDate(b.d),b:[b]}));
+  const keyOf = gran==='month'?monthOf:yearOf;
+  const map={};
+  buckets.forEach(b=>{const k=keyOf(b.d);(map[k]=map[k]||[]).push(b)});
+  return Object.keys(map).sort().map(k=>({
+    key:k, label: gran==='month'? (+k.slice(5,7))+'月' : k+'年', b:map[k]
+  }));
+}
+
+function movingAvg(arr,w){
+  return arr.map((_,i)=>{
+    const s=Math.max(0,i-w+1), sub=arr.slice(s,i+1);
+    return sub.reduce((a,b)=>a+b,0)/sub.length;
+  });
+}
+
+/* ---------------- formatting ---------------- */
+const nf=n=>Math.round(n).toLocaleString('ja-JP');
+const pct=(v,d)=>(v*100).toFixed(d===undefined?1:d)+'%';
+const secFmt=s=>{s=Math.round(s);return s>=60?Math.floor(s/60)+'分'+pad(s%60)+'秒':s+'秒'};
+function delta(cur,prev){
+  if(prev===null||prev===undefined) return null;
+  if(prev===0) return cur>0?{r:null,dir:'up',text:'新規'}:null;
+  const r=(cur-prev)/prev;
+  return {r, dir: r>0.005?'up':(r<-0.005?'down':'flat'),
+          text:(r>0?'+':'')+(r*100).toFixed(1)+'%'};
+}
+function deltaPt(cur,prev){
+  if(prev===null||prev===undefined) return null;
+  const d=(cur-prev)*100;
+  return {d, dir: d>0.05?'up':(d<-0.05?'down':'flat'), text:(d>0?'+':'')+d.toFixed(2)+'pt'};
+}
+const arrow=d=>d==='up'?'▲':d==='down'?'▼':'―';
+
+/* ================================================================
+   描画
+   ================================================================ */
+function renderAll(){
+  const r=resolveRange(); const c=resolveCompare(r);
+  const cur=agg(slice(r.from,r.to));
+  let prev=c?agg(slice(c.from,c.to)):null;
+  // 比較期間にそもそも計測データが無い場合は「比較なし」として扱う（+100%等の誤読を防ぐ）
+  const noPrevData = !!(c && prev && prev.days===0);
+  if(noPrevData) prev=null;
+
+  // 期間をまたいだ実ユニーク数があれば差し替え
+  if(RAW.exact&&RAW.exact.cur&&RAW.exact.cur.users){ cur.users=RAW.exact.cur.users; cur.newUsers=RAW.exact.cur.newUsers; }
+  if(prev&&RAW.exact&&RAW.exact.prev&&RAW.exact.prev.users){ prev.users=RAW.exact.prev.users; prev.newUsers=RAW.exact.prev.newUsers; }
+
+  document.getElementById('range-note').textContent = r.from+' 〜 '+r.to+'（'+diffDays(r.from,r.to)+'日間）';
+  document.getElementById('cmp-note').textContent   =
+    c ? (noPrevData ? c.from+' 〜 '+c.to+' は計測データがないため比較できません' : c.from+' 〜 '+c.to+' と比較') : '';
+
+  renderKPI(cur,prev);
+  renderTraffic(r,c);
+  renderLine(r,c);
+  renderHour(cur);
+  renderDow(cur);
+  renderPages(cur);
+  renderExit(cur);
+  renderFunnel(cur);
+  renderSrc(cur);
+  renderDev(cur);
+  renderSegments(cur);
+  renderAnalysis(cur,prev,r,prev?c:null);
+}
+
+function renderKPI(cur,prev){
+  const items=[
+    {l:'ユーザー数',    v:nf(cur.users),        d:delta(cur.users,prev&&prev.users),        sub:'新規 '+nf(cur.newUsers)+'／リピート '+nf(Math.max(0,cur.users-cur.newUsers))},
+    {l:'セッション',    v:nf(cur.sessions),     d:delta(cur.sessions,prev&&prev.sessions),  sub:'PV '+nf(cur.pv)},
+    {l:'LINE予約クリック',v:nf(cur.line),        d:delta(cur.line,prev&&prev.line),          sub:'全CTA '+nf(cur.ctaTotal)+'件', cls:'line-kpi'},
+    {l:'LINE予約クリック率',v:pct(cur.lineCVR,2),d:deltaPt(cur.lineCVR,prev&&prev.lineCVR),  sub:'クリック ÷ セッション', cls:'line-kpi'},
+    {l:'平均滞在時間',  v:secFmt(cur.engAvg),   d:delta(cur.engAvg,prev&&prev.engAvg),      sub:'画面を見ていた時間の平均'},
+    {l:'即離脱率',      v:pct(cur.bounce),      d:deltaPt(cur.bounce,prev&&prev.bounce),    sub:'25%スクロール未満で離脱（近似）'},
+    {l:'検討到達率',    v:pct(cur.sessions?cur.fn[3]/cur.sessions:0), d:null,               sub:'料金・FAQ・予約CTAまで到達'},
+    {l:'電話・その他CTA',v:nf(cur.ctaTotal-cur.line), d:delta(cur.ctaTotal-cur.line,prev&&(prev.ctaTotal-prev.line)), sub:Object.keys(cur.cta).filter(k=>k!=='line').map(k=>(CTA_LABEL[k]||k)+' '+cur.cta[k]).join('／')||'—'},
+  ];
+  document.getElementById('kpis').innerHTML = items.map(i=>`
+    <div class="kpi ${i.cls||''}">
+      <div class="k-label">${i.l}</div>
+      <div class="k-val">${i.v}</div>
+      ${i.d?`<div class="k-delta ${i.d.dir}">${arrow(i.d.dir)} ${i.d.text}</div>`:'<div class="k-delta flat">―</div>'}
+      <div class="k-sub">${i.sub}</div>
+    </div>`).join('');
+}
+
+function makeChart(id,cfg){
+  if(charts[id]) charts[id].destroy();
+  const ctx=document.getElementById(id).getContext('2d');
+  Chart.defaults.font.family="'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif";
+  Chart.defaults.color='#a89878';
+  charts[id]=new Chart(ctx,cfg);
+}
+const gridCfg={grid:{color:'#f0e8da'},ticks:{font:{size:10}}};
+
+function renderTraffic(r,c){
+  const g = state.gran==='custom' ? (diffDays(r.from,r.to)>120?'month':'day') : state.gran;
+  const s = series(slice(r.from,r.to),g);
+  const users = s.map(x=>agg(x.b).users);
+  const sess  = s.map(x=>agg(x.b).sessions);
+  const ma    = movingAvg(sess,7);
+  const ds=[
+    {label:'セッション',data:sess,borderColor:'#8b6f47',backgroundColor:'rgba(139,111,71,.10)',fill:true,tension:.32,pointRadius:2,borderWidth:2},
+    {label:'ユーザー',  data:users,borderColor:'#c9a84c',backgroundColor:'transparent',tension:.32,pointRadius:0,borderWidth:1.6},
+  ];
+  if(g==='day'&&sess.length>=7) ds.push({label:'7日移動平均',data:ma,borderColor:'#c8b89a',borderDash:[5,4],pointRadius:0,borderWidth:1.4,tension:.4});
+  if(c){
+    const ps=series(slice(c.from,c.to),g).map(x=>agg(x.b).sessions);
+    while(ps.length<s.length) ps.push(null);
+    ds.push({label:'比較期間のセッション',data:ps.slice(0,s.length),borderColor:'#d9c9a8',borderDash:[2,3],pointRadius:0,borderWidth:1.4,tension:.32});
+  }
+  document.getElementById('note-traffic').textContent =
+    g==='day'?'日別（7日移動平均つき）':g==='month'?'月別':'年別';
+  makeChart('c-traffic',{type:'line',data:{labels:s.map(x=>x.label),datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+      scales:{y:{beginAtZero:true,...gridCfg},x:gridCfg}}});
+}
+
+function renderLine(r,c){
+  const g = state.gran==='custom' ? (diffDays(r.from,r.to)>120?'month':'day') : state.gran;
+  const s = series(slice(r.from,r.to),g);
+  const clicks=s.map(x=>agg(x.b).line);
+  const cvr   =s.map(x=>{const a=agg(x.b);return a.sessions?+(a.line/a.sessions*100).toFixed(2):0});
+  const ds=[
+    {type:'bar',label:'LINE予約クリック',data:clicks,backgroundColor:'rgba(6,199,85,.55)',borderColor:'#06c755',borderWidth:1,yAxisID:'y',borderRadius:3},
+    {type:'line',label:'クリック率(%)',data:cvr,borderColor:'#8b6f47',backgroundColor:'transparent',yAxisID:'y1',tension:.32,pointRadius:2,borderWidth:2},
+  ];
+  if(c){
+    const pc=series(slice(c.from,c.to),g).map(x=>agg(x.b).line);
+    while(pc.length<s.length) pc.push(null);
+    ds.push({type:'line',label:'比較期間のクリック数',data:pc.slice(0,s.length),borderColor:'#c8b89a',borderDash:[3,3],pointRadius:0,borderWidth:1.4,yAxisID:'y'});
+  }
+  makeChart('c-line',{data:{labels:s.map(x=>x.label),datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+      scales:{y:{beginAtZero:true,position:'left',title:{display:true,text:'クリック数',font:{size:10}},...gridCfg},
+              y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:10},callback:v=>v+'%'},title:{display:true,text:'クリック率',font:{size:10}}},
+              x:gridCfg}}});
+}
+
+function renderHour(m){
+  const labels=[...Array(24)].map((_,i)=>i+'時');
+  makeChart('c-hour',{data:{labels,datasets:[
+    {type:'bar',label:'セッション',data:m.hr,backgroundColor:'rgba(139,111,71,.35)',borderRadius:2,yAxisID:'y'},
+    {type:'line',label:'LINEクリック',data:m.ctahr,borderColor:'#06c755',backgroundColor:'transparent',tension:.35,pointRadius:2,borderWidth:2,yAxisID:'y1'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+    scales:{y:{beginAtZero:true,...gridCfg},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:10},precision:0}},x:{...gridCfg,ticks:{font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:12}}}}});
+}
+
+function renderDow(m){
+  const order=[1,2,3,4,5,6,0];
+  const cvr=order.map(i=>m.dowS[i]?+(m.dowL[i]/m.dowS[i]*100).toFixed(2):0);
+  makeChart('c-dow',{data:{labels:order.map(i=>DOW_LABEL[i]),datasets:[
+    {type:'bar',label:'セッション',data:order.map(i=>m.dowS[i]),backgroundColor:'rgba(139,111,71,.35)',borderRadius:3,yAxisID:'y'},
+    {type:'bar',label:'LINEクリック',data:order.map(i=>m.dowL[i]),backgroundColor:'rgba(6,199,85,.6)',borderRadius:3,yAxisID:'y1'},
+    {type:'line',label:'クリック率(%)',data:cvr,borderColor:'#c9a84c',tension:.3,pointRadius:2,borderWidth:2,yAxisID:'y1'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+    scales:{y:{beginAtZero:true,...gridCfg},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:10}}},x:gridCfg}}});
+}
+
+function pageName(p){
+  if(p==='/'||p==='')       return 'TOP（美容室）';
+  if(p.includes('recruit')) return '求人ページ';
+  return p;
+}
+
+function renderPages(m){
+  const rows=Object.entries(m.pages).map(([p,x])=>({
+    p, pv:x.pv, s:x.s, line:x.line, cvr:x.s?x.line/x.s:0, eng:x.s?x.eng/x.s:0
+  })).sort((a,b)=>b.s-a.s);
+  const el=document.getElementById('t-pages');
+  if(!rows.length){el.innerHTML='<div class="empty">この期間のページデータがありません</div>';return;}
+  const maxCvr=Math.max(...rows.map(r=>r.cvr),0.0001);
+  const avg=m.lineCVR;
+  el.innerHTML=`<table><thead><tr>
+      <th>ページ</th><th class="num">セッション</th><th class="num">PV</th>
+      <th class="num">LINEクリック</th><th>クリック率</th><th class="num">平均滞在</th><th>評価</th>
+    </tr></thead><tbody>${rows.map(r=>{
+      const w=Math.round(r.cvr/maxCvr*70);
+      let tag='—';
+      if(r.s>=20&&r.cvr>=avg*1.3) tag='<span class="tag" style="background:#e3f2e3;color:#3d7a3d">高効率</span>';
+      else if(r.s>=20&&r.cvr<avg*0.7) tag='<span class="tag" style="background:#f7e6e6;color:#a55">要改善</span>';
+      else if(r.s<20) tag='<span class="tag">サンプル不足</span>';
+      return `<tr>
+        <td>${pageName(r.p)}<div class="muted" style="font-size:.68rem">${r.p}</div></td>
+        <td class="num">${nf(r.s)}</td><td class="num">${nf(r.pv)}</td>
+        <td class="num">${nf(r.line)}</td>
+        <td class="bar-cell"><span class="bar" style="width:${w}px"></span>${pct(r.cvr,2)}</td>
+        <td class="num">${secFmt(r.eng)}</td><td>${tag}</td></tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function renderExit(m){
+  const rows=Object.entries(m.ex).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!rows.length){makeChart('c-exit',{type:'bar',data:{labels:['データなし'],datasets:[{data:[0],backgroundColor:'#f0e8da'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});return;}
+  makeChart('c-exit',{type:'bar',data:{labels:rows.map(r=>r[0]),datasets:[{label:'離脱数',data:rows.map(r=>r[1]),backgroundColor:'rgba(192,112,112,.55)',borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,...gridCfg},y:{...gridCfg,ticks:{font:{size:10}}}}}});
+}
+
+function renderFunnel(m){
+  const d=[m.fn[1],m.fn[2],m.fn[3]];
+  makeChart('c-funnel',{type:'bar',data:{labels:['認知','興味・関心','検討'],datasets:[{data:d,backgroundColor:['rgba(200,184,154,.8)','rgba(139,111,71,.8)','rgba(201,168,76,.9)'],borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>{const base=m.fn[1]||1;return nf(c.raw)+'件（認知比 '+pct(c.raw/base)+'）'}}}},
+      scales:{x:{beginAtZero:true,...gridCfg},y:gridCfg}}});
+}
+
+function donut(id,obj,labelMap){
+  const rows=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length){makeChart(id,{type:'doughnut',data:{labels:['データなし'],datasets:[{data:[1],backgroundColor:['#f0e8da']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});return;}
+  makeChart(id,{type:'doughnut',data:{labels:rows.map(r=>labelMap[r[0]]||r[0]),datasets:[{data:rows.map(r=>r[1]),backgroundColor:PALETTE,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:11}}}}}});
+}
+const renderSrc=m=>donut('c-src',m.src,SRC_LABEL);
+const renderDev=m=>donut('c-dev',m.dev,DEV_LABEL);
+
+/* 流入元別・デバイス別CVRは、日次バケットに含まれる粒度の都合上
+   セッション数のみ正確。CVRは全体クリックを按分せず「未接続」と明示する。 */
+function renderSegments(m){
+  const el=document.getElementById('t-segments');
+  const srcRows=Object.entries(m.src).sort((a,b)=>b[1]-a[1]);
+  const devRows=Object.entries(m.dev).sort((a,b)=>b[1]-a[1]);
+  if(!srcRows.length&&!devRows.length){el.innerHTML='<div class="empty">流入元・デバイスの計測はトラッカーv2から開始します。<br>反映まで数日お待ちください。</div>';return;}
+  const tot=m.sessions||1;
+  el.innerHTML=`<table><thead><tr><th>セグメント</th><th class="num">セッション</th><th class="num">構成比</th><th>メモ</th></tr></thead><tbody>
+    ${srcRows.map(r=>`<tr><td>流入元：${SRC_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td><td class="muted">—</td></tr>`).join('')}
+    ${devRows.map(r=>`<tr><td>デバイス：${DEV_LABEL[r[0]]||r[0]}</td><td class="num">${nf(r[1])}</td><td class="num">${pct(r[1]/tot)}</td><td class="muted">—</td></tr>`).join('')}
+  </tbody></table>
+  <div class="muted" style="font-size:.72rem;margin-top:10px">セグメント別のコンバージョン率は、GA4 Data API 接続（Phase 4）で対応します。</div>`;
+}
+
+/* ================================================================
+   自動分析エンジン
+   数値 → 解釈 → 原因仮説 → 優先施策
+   ================================================================ */
+function analyze(cur,prev,r,c){
+  const out={warnings:[],paragraphs:[],actions:[],conclusions:[]};
+  const small = cur.sessions < 30;
+  const tiny  = cur.sessions < 10;
+
+  if(tiny){
+    out.warnings.push('この期間のセッションは'+nf(cur.sessions)+'件です。統計的な判断ができる量ではありません。以下はすべて「参考値」として扱ってください。');
+  }else if(small){
+    out.warnings.push('この期間のセッションは'+nf(cur.sessions)+'件です。サンプル数が少ないため、増減は偶然の変動を含みます。断定せず傾向としてご覧ください。');
+  }
+
+  const dS   = prev?delta(cur.sessions,prev.sessions):null;
+  const dU   = prev?delta(cur.users,prev.users):null;
+  const dL   = prev?delta(cur.line,prev.line):null;
+  const dCVR = prev?deltaPt(cur.lineCVR,prev.lineCVR):null;
+
+  /* ---- 段落1：アクセス ---- */
+  let p1='この期間のセッションは<strong>'+nf(cur.sessions)+'件</strong>、ユーザー数は<strong>'+nf(cur.users)+'人</strong>です。';
+  if(dS&&dS.r!==null) p1+='比較期間に対してセッションは<strong>'+dS.text+'</strong>'+(dS.dir==='up'?'増加':dS.dir==='down'?'減少':'ほぼ横ばい')+'しています。';
+  if(cur.users) p1+='うち新規は'+nf(cur.newUsers)+'人（'+pct(cur.newUsers/cur.users)+'）、リピートは'+pct(cur.repeatRate)+'です。';
+  out.paragraphs.push(p1);
+
+  /* ---- 段落2：コンバージョン ---- */
+  let p2='LINE予約クリックは<strong>'+nf(cur.line)+'件</strong>、クリック率は<strong>'+pct(cur.lineCVR,2)+'</strong>です。';
+  if(dCVR) p2+='比較期間からは<strong>'+dCVR.text+'</strong>の変化です。';
+  if(dS&&dCVR&&dS.dir==='up'&&dCVR.dir==='down'){
+    p2+='アクセスは伸びているのにクリック率が下がっているため、<strong>流入の増加に予約行動が追いついていません</strong>。';
+  }else if(dS&&dCVR&&dS.dir==='down'&&dCVR.dir==='up'){
+    p2+='アクセスは減っていますが、来た人あたりの予約行動は改善しています。<strong>サイトの質より、流入量が課題</strong>の局面です。';
+  }
+  out.paragraphs.push(p2);
+
+  /* ---- 段落3：行動 ---- */
+  const exArr=Object.entries(cur.ex).sort((a,b)=>b[1]-a[1]);
+  const exTot=exArr.reduce((a,b)=>a+b[1],0);
+  const heroKeys=['ヒーロー','（トップ付近）','コンセプト','新店オープン情報','サロン紹介'];
+  const heroExit=exArr.filter(e=>heroKeys.includes(e[0])).reduce((a,b)=>a+b[1],0);
+  const heroShare=exTot?heroExit/exTot:0;
+  let p3='平均滞在時間は<strong>'+secFmt(cur.engAvg)+'</strong>、25%スクロール未満で離脱した割合は<strong>'+pct(cur.bounce)+'</strong>です。';
+  if(exArr.length) p3+='最も離脱が多いのは「<strong>'+exArr[0][0]+'</strong>」（'+nf(exArr[0][1])+'件・全体の'+pct(exArr[0][1]/(exTot||1))+'）です。';
+  if(heroShare>=0.3) p3+='ページ上部での離脱が全体の'+pct(heroShare)+'を占めており、<strong>ファーストビューで判断されて離れている</strong>可能性が高い状態です。';
+  out.paragraphs.push(p3);
+
+  /* ---- 段落4：時間帯・曜日 ---- */
+  const peakH=cur.ctahr.indexOf(Math.max(...cur.ctahr));
+  const peakD=cur.dowL.indexOf(Math.max(...cur.dowL));
+  if(cur.line>=5){
+    let p4='LINE予約クリックが最も多いのは<strong>'+peakH+'時台</strong>、曜日では<strong>'+DOW_LABEL[peakD]+'曜日</strong>です。';
+    const bestCvrD=cur.dowS.map((s,i)=>({i,cvr:s?cur.dowL[i]/s:0,s})).filter(x=>x.s>=10).sort((a,b)=>b.cvr-a.cvr)[0];
+    if(bestCvrD) p4+='クリック率が最も高いのは'+DOW_LABEL[bestCvrD.i]+'曜日（'+pct(bestCvrD.cvr,2)+'）で、投稿や広告配信を寄せる価値があります。';
+    out.paragraphs.push(p4);
+  }
+
+  /* ---- 段落5：異常値検出 ---- */
+  const days=slice(r.from,r.to);
+  if(days.length>=14){
+    const ss=days.map(b=>b.s);
+    const mean=ss.reduce((a,b)=>a+b,0)/ss.length;
+    const sd=Math.sqrt(ss.reduce((a,b)=>a+(b-mean)**2,0)/ss.length);
+    if(sd>0){
+      const out2=days.map((b,i)=>({d:b.d,z:(ss[i]-mean)/sd,s:ss[i]})).filter(x=>Math.abs(x.z)>2);
+      if(out2.length){
+        out.paragraphs.push('通常と大きく異なる日がありました：'+out2.map(x=>jpDate(x.d)+'（'+x.s+'セッション／平均'+mean.toFixed(1)+'）').join('、')+'。SNS投稿や口コミなど、当日の出来事と照合してください。');
+      }
+    }
+  }
+
+  /* ================= 施策判定 ================= */
+  const A=(score,cat,title,basis,effect,reason)=>out.actions.push({score,cat,title,basis,effect,reason});
+  const avgCvr=cur.lineCVR;
+
+  // R1: CTA改善
+  if(prev&&cur.sessions>=20&&prev.lineCVR>0&&cur.lineCVR<prev.lineCVR*0.9){
+    A(5,'CTA改善','LINE予約ボタンの位置・文言を見直す',
+      'LINEクリック率 '+pct(prev.lineCVR,2)+' → '+pct(cur.lineCVR,2)+'（'+dCVR.text+'）／セッション '+(dS?dS.text:'—'),
+      '同じアクセス数のまま予約クリックが増える',
+      'アクセスは確保できているのに予約行動が減っています。新しい流入を買う前に、いま来ている人を取りこぼさないことが先です。');
+  }else if(cur.sessions>=30&&cur.lineCVR<0.015){
+    A(4,'CTA改善','予約導線をページ内に増やす（追従ボタン／各セクション末尾）',
+      'LINEクリック率 '+pct(cur.lineCVR,2)+'（セッション'+nf(cur.sessions)+'件中'+nf(cur.line)+'件）',
+      'クリック率の底上げ',
+      '美容室サイトの予約クリック率は一般に2%前後が目安です。現状はそれを下回っており、導線の露出不足が疑われます。');
+  }
+
+  // R2: ヒーロー改善
+  if(exTot>=10&&heroShare>=0.30){
+    A(heroShare>=0.4?5:4,'ヒーローセクション改善','ファーストビューの訴求（写真・キャッチ・最初のCTA）を作り直す',
+      'ページ上部での離脱が全離脱の'+pct(heroShare)+'／即離脱率 '+pct(cur.bounce),
+      'スクロール到達率と滞在時間の改善',
+      '訪問者の大半が中身を見る前に離れています。広告を増やしても同じ比率で離脱するため、先に入口を直すべきです。');
+  }else if(cur.pv>=50&&cur.bounce>=0.6){
+    A(4,'ヒーローセクション改善','ファーストビューで「何の店か・何ができるか」を1秒で伝える',
+      '即離脱率 '+pct(cur.bounce)+'（25%スクロール未満）',
+      '離脱率の低下',
+      '半数以上がページ冒頭で離れています。写真と最初の1行が期待とずれている可能性があります。');
+  }
+
+  // R3: 広告・導線強化（高効率ページ）
+  const pages=Object.entries(cur.pages).map(([p,x])=>({p,s:x.s,cvr:x.s?x.line/x.s:0,line:x.line}));
+  const hot=pages.filter(x=>x.s>=20&&x.cvr>=avgCvr*1.4&&x.s<cur.sessions*0.35).sort((a,b)=>b.cvr-a.cvr)[0];
+  if(hot){
+    A(4,'広告・導線強化','「'+pageName(hot.p)+'」への導線をTOPに増やし、広告の着地先にも設定する',
+      pageName(hot.p)+'：セッション'+nf(hot.s)+'件・クリック率'+pct(hot.cvr,2)+'（全体平均 '+pct(avgCvr,2)+'）',
+      '予約クリック数の増加',
+      'アクセスは少ないのに予約率が高いページです。見られていないだけで、見られれば予約されています。');
+  }
+  if(prev&&dS&&dCVR&&dS.dir==='down'&&cur.lineCVR>=prev.lineCVR&&cur.sessions>=20){
+    A(4,'広告強化','流入を増やす（SNS投稿頻度・広告出稿）',
+      'セッション '+dS.text+'／クリック率は'+pct(cur.lineCVR,2)+'を維持',
+      '予約数の回復',
+      'サイトの成約力は落ちていません。落ちているのは来訪数です。この局面では集客側に投資する方が費用対効果が高いです。');
+  }
+
+  // R4: SEO強化
+  const orgS=cur.src.organic||0;
+  const orgShare=cur.sessions?orgS/cur.sessions:0;
+  if(cur.sessions>=30&&orgShare<0.35&&orgS>0){
+    A(3,'SEO強化','検索流入を増やす（「中川 美容室」等の地域キーワード・ブログ）',
+      '検索流入は'+nf(orgS)+'セッション（全体の'+pct(orgShare)+'）',
+      '広告費をかけずに継続的な流入増',
+      '検索からの流入比率が低く、SNSや直接流入に依存しています。検索は積み上がる資産になるため、中長期の安定に効きます。');
+  }else if(orgShare>=0.5&&cur.sessions>=30){
+    A(3,'SEO強化','上位表示できているキーワードの周辺ページを増やす',
+      '検索流入が全体の'+pct(orgShare)+'を占め、主要な入口になっています',
+      '流入の上積み',
+      '検索が主力の入口になっています。伸びている領域を広げる方が、新しい施策より確実です。');
+  }
+
+  // R5: デバイス
+  const mob=cur.dev.mobile||0, dsk=cur.dev.desktop||0;
+  if(mob+dsk>=40&&mob/(mob+dsk)>=0.75){
+    A(3,'スマホ最適化','スマホ表示での予約ボタン到達（追従CTA・タップ領域）を優先的に検証する',
+      'スマホが全体の'+pct(mob/(mob+dsk+ (cur.dev.tablet||0)))+'を占めています',
+      'モバイル経由の予約増',
+      '訪問のほとんどがスマホです。PCで見た印象ではなく、スマホでの導線を基準に改善すべきです。');
+  }
+
+  // R6: コンテンツ強化
+  const deep=pages.filter(x=>x.s>=20).sort((a,b)=>(cur.pages[b.p].eng/cur.pages[b.p].s)-(cur.pages[a.p].eng/cur.pages[a.p].s))[0];
+  if(deep&&cur.pages[deep.p].s){
+    const e=cur.pages[deep.p].eng/cur.pages[deep.p].s;
+    if(e>=60&&deep.cvr<avgCvr){
+      A(3,'コンテンツ強化','「'+pageName(deep.p)+'」の読了地点に予約導線を置く',
+        '平均滞在 '+secFmt(e)+'（よく読まれている）／クリック率 '+pct(deep.cvr,2)+'（平均以下）',
+        '滞在を予約に変換',
+        'しっかり読まれているのに予約に至っていません。関心は高いので、読み終えた位置にCTAを置くだけで拾える可能性があります。');
+    }
+  }
+
+  // R7: A/Bテスト推奨
+  const sorted=out.actions.slice().sort((a,b)=>b.score-a.score);
+  if(sorted.length>=2&&sorted[0].score===sorted[1].score){
+    A(2,'A/Bテスト推奨','上位2つの施策を同時に判断せず、片方ずつ2週間で検証する',
+      '同スコアの施策が複数あり、データだけでは優劣を判定できません',
+      '誤った改善で数字を落とすリスクの回避',
+      '同時に変えると、どちらが効いたか分からなくなります。順番に試す方が学習が残ります。');
+  }
+  if(!out.actions.length){
+    A(2,'計測継続','判断できるだけのデータが貯まるまで計測を続ける',
+      'セッション '+nf(cur.sessions)+'件・LINEクリック '+nf(cur.line)+'件',
+      '—',
+      '現時点では有意な問題を検出できません。数値が動いた時点で自動的に施策が表示されます。');
+  }
+
+  out.actions.sort((a,b)=>b.score-a.score);
+  out.actions=out.actions.slice(0,4);
+
+  /* ---- 結論（上から順にやること） ---- */
+  out.conclusions=out.actions.map(a=>a.title);
+  if(small) out.conclusions.push('判断精度を上げるため、まずはアクセスを一定量まで増やす（サンプル数の確保）');
+
+  return out;
+}
+
+function renderAnalysis(cur,prev,r,c){
+  const a=analyze(cur,prev,r,c);
+  document.getElementById('a-period').textContent =
+    r.from+' 〜 '+r.to + (c?'（比較： '+c.from+' 〜 '+c.to+'）':'（比較なし）') + (state.demo?' ／ DEMO DATA':'');
+  document.getElementById('a-body').innerHTML=`
+    ${a.warnings.map(w=>`<div class="warn">⚠ ${w}</div>`).join('')}
+    <div class="verdict">
+      <h3>この期間の結論 ／ 上から順に着手</h3>
+      <ol>${a.conclusions.map(x=>`<li>${x}</li>`).join('')}</ol>
+    </div>
+    <div class="summary-text">${a.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>
+    <div class="actions">
+      ${a.actions.map(x=>`
+        <div class="action">
+          <div class="action-head">
+            <span class="stars">${'★'.repeat(x.score)}${'☆'.repeat(5-x.score)}</span>
+            <span class="action-cat">${x.cat}</span>
+            <span class="action-title">${x.title}</span>
+          </div>
+          <dl>
+            <dt>根拠</dt><dd>${x.basis}</dd>
+            <dt>期待効果</dt><dd>${x.effect}</dd>
+            <dt>推奨理由</dt><dd>${x.reason}</dd>
+          </dl>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ================================================================
+   デモデータ（明示的にDEMOと表示。実データと混ぜません）
+   ================================================================ */
+function demoData(){
+  const daily=[]; const end=new Date(); end.setHours(0,0,0,0);
+  let seed=7; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  for(let i=180;i>=0;i--){
+    const d=new Date(end); d.setDate(d.getDate()-i);
+    const ds=fmt(d), dw=d.getDay();
+    const wk=(dw===6?1.35:dw===0?1.15:dw===5?1.1:0.9);
+    const trend=1+(180-i)/500;
+    const s=Math.max(1,Math.round((12+rnd()*14)*wk*trend));
+    const u=Math.max(1,Math.round(s*0.86));
+    const nu=Math.round(u*(0.62+rnd()*0.12));
+    const pv=Math.round(s*1.5);
+    const line=Math.round(s*(0.021+ (i<40? -0.005:0) + rnd()*0.012));
+    const hr={},ctahr={};
+    for(let h=0;h<24;h++){ const wgt=[0.2,0.1,0.1,0.1,0.1,0.2,0.4,0.7,0.9,1,1.1,1.2,1.3,1.2,1.1,1.1,1.2,1.5,1.9,2.1,1.8,1.3,0.8,0.4][h];
+      const v=Math.round(s*wgt/24); if(v) hr[h]=v; }
+    let left=line; [19,18,20,12,21,13].forEach(h=>{ if(left>0){const v=Math.min(left,Math.round(line*0.25)+ (rnd()<0.3?1:0)); if(v>0){ctahr[h]=v;left-=v;} }});
+    if(left>0) ctahr[11]=(ctahr[11]||0)+left;
+    daily.push({d:ds,u,nu,s,pv,eng:s*(75+rnd()*40),
+      cta:{line,phone:Math.round(line*0.25),instagram:Math.round(s*0.01),recruit:rnd()<0.3?1:0},
+      hr,ctahr,
+      pg:{'/':{pv:Math.round(pv*0.78),s:Math.round(s*0.8),line:Math.round(line*0.72),cta:line,eng:Math.round(s*0.8*70)},
+          '/recruit.html':{pv:Math.round(pv*0.22),s:Math.round(s*0.2),line:Math.round(line*0.28),cta:Math.round(line*0.3),eng:Math.round(s*0.2*145)}},
+      src:{organic:Math.round(s*0.31),social:Math.round(s*0.34),direct:Math.round(s*0.24),referral:Math.round(s*0.11)},
+      dev:{mobile:Math.round(s*0.81),desktop:Math.round(s*0.14),tablet:Math.round(s*0.05)},
+      ex:{'ヒーロー':Math.round(s*0.30),'メニュー':Math.round(s*0.14),'スタッフ':Math.round(s*0.11),'初回特典':Math.round(s*0.09),'アクセス':Math.round(s*0.07),'予約CTA':Math.round(s*0.05)},
+      fn:{1:s,2:Math.round(s*0.55),3:Math.round(s*0.21)},
+      sc:{25:Math.round(pv*0.58),50:Math.round(pv*0.36),75:Math.round(pv*0.21),90:Math.round(pv*0.12)}});
+  }
+  return {daily,firstDate:daily[0].d,lastDate:daily[daily.length-1].d,totalRows:daily.length*20,exact:{}};
+}
+
+/* ================================================================
+   読み込み
+   ================================================================ */
+function setStatus(cls,text,badge,badgeCls){
+  document.getElementById('dot').className='dot '+cls;
+  document.getElementById('status-text').textContent=text;
+  const b=document.getElementById('data-badge');
+  b.textContent=badge; b.className='badge '+(badgeCls||'');
+}
+
+async function load(){
+  if(state.demo){
+    RAW=demoData();
+    setStatus('ok','デモデータを表示しています。実データではありません。','DEMO DATA','demo');
+    buildChips(); renderAll(); return;
+  }
+  setStatus('load','データを読み込んでいます…','CONNECTING…','');
+  const r=resolveRange(), c=resolveCompare(r);
+  const q=new URLSearchParams({action:'v2',from:r.from||'',to:r.to||''});
+  if(c){q.set('pfrom',c.from);q.set('pto',c.to);}
+  try{
+    const res=await fetch(ENDPOINT+'?'+q.toString());
+    const json=await res.json();
+    if(json.error) throw new Error(json.error);
+    if(!json.daily||!json.daily.length){
+      RAW={daily:[],firstDate:null,lastDate:null,exact:{}};
+      setStatus('err','データ接続待ち — 計測データがまだありません','データ接続待ち','wait');
+      showEmptyAll(); return;
+    }
+    RAW=json;
+    setStatus('ok','最終更新 '+new Date().toLocaleString('ja-JP')+' ／ '+json.totalRows+'イベント（'+json.firstDate+'〜'+json.lastDate+'）','LIVE DATA','live');
+    buildChips(); renderAll();
+  }catch(err){
+    RAW={daily:[],firstDate:null,lastDate:null,exact:{}};
+    setStatus('err','データ接続待ち — API に接続できません（'+err.message+'）','データ接続待ち','wait');
+    showEmptyAll();
+  }
+}
+
+function showEmptyAll(){
+  document.getElementById('kpis').innerHTML=
+    ['ユーザー数','セッション','LINE予約クリック','LINE予約クリック率'].map(l=>
+    `<div class="kpi"><div class="k-label">${l}</div><div class="k-val muted">—</div><div class="k-sub">データ接続待ち</div></div>`).join('');
+  ['c-traffic','c-line','c-hour','c-dow','c-exit','c-funnel','c-src','c-dev'].forEach(id=>{if(charts[id])charts[id].destroy();});
+  document.getElementById('t-pages').innerHTML='<div class="empty">データ接続待ち</div>';
+  document.getElementById('t-segments').innerHTML='<div class="empty">データ接続待ち</div>';
+  document.getElementById('a-body').innerHTML='<div class="empty">計測データが届き次第、自動で総評と改善施策を表示します。<br>架空の数値は表示しません。</div>';
+  document.getElementById('a-period').textContent='';
+}
+
+/* ---------------- UI ---------------- */
+function buildChips(){
+  const el=document.getElementById('chips');
+  const cr=document.getElementById('custom-range');
+  if(state.gran==='custom'){ el.innerHTML=''; cr.style.display='flex';
+    if(RAW&&RAW.lastDate){ const f=document.getElementById('d-from'),t=document.getElementById('d-to');
+      if(!f.value) f.value=state.from||addDays(RAW.lastDate,-27);
+      if(!t.value) t.value=state.to||RAW.lastDate; }
+    return; }
+  cr.style.display='none';
+  const list=PRESETS[state.gran]||[];
+  if(!list.some(x=>x.k===state.preset)) state.preset=list[0]?list[0].k:'all';
+  el.innerHTML=list.map(x=>`<button class="chip ${state.preset===x.k?'on':''}" data-p="${x.k}">${x.label}</button>`).join('');
+}
+
+document.getElementById('seg-gran').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.gran=b.dataset.g;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  buildChips(); if(RAW&&RAW.daily.length) renderAll();
+});
+document.getElementById('chips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  state.preset=b.dataset.p; buildChips();
+  if(state.demo){ renderAll(); } else { load(); }
+});
+document.getElementById('seg-cmp').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.cmp=b.dataset.c;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  if(state.demo){ renderAll(); } else { load(); }
+});
+document.getElementById('btn-apply').addEventListener('click',()=>{
+  const f=document.getElementById('d-from').value, t=document.getElementById('d-to').value;
+  if(!f||!t||f>t){ alert('期間を正しく指定してください'); return; }
+  state.from=f; state.to=t;
+  if(state.demo){ renderAll(); } else { load(); }
+});
+document.getElementById('btn-reload').addEventListener('click',load);
+document.getElementById('btn-demo').addEventListener('click',e=>{
+  state.demo=!state.demo;
+  e.target.textContent=state.demo?'実データに戻す':'デモ表示';
+  load();
+});
+
+buildChips();
+load();
+</script>
+</body>
+</html>
