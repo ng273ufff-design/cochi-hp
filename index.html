@@ -650,6 +650,70 @@
       color: var(--text);
     }
 
+    .plan h3 { min-height: 3.2em; }
+
+    .plan-items {
+      list-style: none;
+      margin: 22px 0 0;
+      padding: 20px 0 0;
+      border-top: 1px solid rgba(200,184,154,0.5);
+      text-align: left;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .plan-items li {
+      position: relative;
+      padding-left: 1.3em;
+      margin-bottom: 8px;
+    }
+
+    .plan-items li::before {
+      content: '✦';
+      position: absolute;
+      left: 0;
+      top: 0.2em;
+      font-size: 0.7em;
+      color: var(--gold);
+    }
+
+    .plan-items li.plan-head {
+      padding-left: 0;
+      margin: 14px 0 10px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-align: center;
+    }
+
+    .plan-items li.plan-head::before { content: none; }
+
+    .plan-items li.plan-add {
+      color: var(--dark);
+      font-weight: 500;
+    }
+
+    .plan-items li.plan-add::before { content: '＋'; font-size: 0.8em; top: 0.1em; }
+
+    .plan-items li.plan-or {
+      padding-left: 0;
+      margin: -2px 0 6px;
+      text-align: center;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--taupe);
+    }
+
+    .plan-items li.plan-or::before { content: none; }
+
+    .plan-items small {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+
     /* ── Voice / Reviews ── */
     .voice { background: var(--beige); }
 
@@ -1378,25 +1442,56 @@
     <p class="section-label">First Visit</p>
     <h2>初回特別価格</h2>
     <div class="divider"></div>
-    <p class="pricing-note">※ 初めてご来店の方限定のお得なプランです。</p>
+    <p class="pricing-note">※ 初めてご来店の方限定のお得なプランです。<br>※ PLAN B・C は、PLAN A の内容に追加メニューをプラスしたコースです。</p>
     <div class="plans">
       <div class="plan">
         <p class="plan-label">PLAN A</p>
         <h3>カット＋<br>水素髪質改善カラー</h3>
         <p class="plan-original">¥18,150</p>
         <p class="plan-price">¥13,000<span>（税込）</span></p>
+        <ul class="plan-items">
+          <li>カット</li>
+          <li>ボトムトリートメント</li>
+          <li>ヘア＆スカルプデトックス</li>
+          <li>水素ケア（活性酸素除去）</li>
+          <li>ジアミンレスケア</li>
+          <li>cochiオリジナルケア</li>
+        </ul>
       </div>
       <div class="plan">
         <p class="plan-label">PLAN B</p>
-        <h3>カット＋水素髪質改善カラー<br>＋【オーダーメイドケア<br>or 脳デトックスヘッドスパ】</h3>
+        <h3>カット＋水素髪質改善カラー<br>＋ケア or ヘッドスパ</h3>
         <p class="plan-original">¥24,750</p>
         <p class="plan-price">¥18,000<span>（税込）</span></p>
+        <ul class="plan-items">
+          <li>カット</li>
+          <li>ボトムトリートメント</li>
+          <li>ヘア＆スカルプデトックス</li>
+          <li>水素ケア（活性酸素除去）</li>
+          <li>ジアミンレスケア</li>
+          <li>cochiオリジナルケア</li>
+          <li class="plan-head">下記から1つお選びください</li>
+          <li class="plan-add">Oggi Otto オーダーメイドケア</li>
+          <li class="plan-or">or</li>
+          <li class="plan-add">脳デトックス アロマヘッドスパ<small>30分コース</small></li>
+        </ul>
       </div>
       <div class="plan">
         <p class="plan-label">PLAN C</p>
-        <h3>カット＋水素髪質改善カラー<br>＋オーダーメイドケア<br>＋脳デトックスヘッドスパ</h3>
+        <h3>カット＋水素髪質改善カラー<br>＋ケア＋ヘッドスパ</h3>
         <p class="plan-original">¥31,350</p>
         <p class="plan-price">¥24,000<span>（税込）</span></p>
+        <ul class="plan-items">
+          <li>カット</li>
+          <li>ボトムトリートメント</li>
+          <li>ヘア＆スカルプデトックス</li>
+          <li>水素ケア（活性酸素除去）</li>
+          <li>ジアミンレスケア</li>
+          <li>cochiオリジナルケア</li>
+          <li class="plan-head">下記の2つをプラス</li>
+          <li class="plan-add">Oggi Otto オーダーメイドケア</li>
+          <li class="plan-add">脳デトックス アロマヘッドスパ<small>30分コース</small></li>
+        </ul>
       </div>
     </div>
   </div>
